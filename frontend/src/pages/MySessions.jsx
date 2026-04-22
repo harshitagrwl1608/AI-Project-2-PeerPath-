@@ -73,8 +73,10 @@ const MySessions = () => {
         try {
             let meetUrl = session.meetLink;
 
-            if (!meetUrl) {
-                // First click: compute and persist so both peers always share the same link
+            // Regenerate if missing OR if it's an old broken Google Meet URL
+            // (meet.google.com does not support custom room names — those links are invalid)
+            const isInvalidGoogleMeet = meetUrl && meetUrl.includes('meet.google.com');
+            if (!meetUrl || isInvalidGoogleMeet) {
                 meetUrl = getMeetUrl(session.id);
                 await updateSession(session.id, { meetLink: meetUrl });
                 setSessions(prev =>
