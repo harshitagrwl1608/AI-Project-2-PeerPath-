@@ -57,40 +57,6 @@ const MySessions = () => {
         if (sessions.length > 0 && currentUser) resolvePeerNames();
     }, [sessions, currentUser]);
 
-    /**
-     * Generate a deterministic Jitsi Meet room URL from the session ID.
-     * Jitsi Meet (meet.jit.si) supports custom room names — both users
-     * will always land in the exact same room because the name is derived
-     * from the unique session ID. No API key required.
-     */
-    const getMeetUrl = (sessionId) => {
-        // Strip hyphens → pure alphanumeric room name, e.g. "PeerPath-550e8400e29b41d4a716446655440000"
-        const room = String(sessionId).replace(/-/g, '');
-        return `https://meet.jit.si/PeerPath-${room}`;
-    };
-
-    const handleJoinStream = async (session) => {
-        try {
-            let meetUrl = session.meetLink;
-
-            // Regenerate if missing OR if it's an old broken Google Meet URL
-            // (meet.google.com does not support custom room names — those links are invalid)
-            const isInvalidGoogleMeet = meetUrl && meetUrl.includes('meet.google.com');
-            if (!meetUrl || isInvalidGoogleMeet) {
-                meetUrl = getMeetUrl(session.id);
-                await updateSession(session.id, { meetLink: meetUrl });
-                setSessions(prev =>
-                    prev.map(s => s.id === session.id ? { ...s, meetLink: meetUrl } : s)
-                );
-            }
-
-            showToast("Opening video meeting room…", "info");
-            window.open(meetUrl, '_blank');
-        } catch (err) {
-            console.error('handleJoinStream error:', err);
-            showToast("Could not open meeting. Please try again.", "error");
-        }
-    };
 
     const handleConfirmRetract = async () => {
         if (!retractSession) return;
@@ -225,14 +191,6 @@ const MySessions = () => {
                                                 <>
                                                     <button onClick={() => setActiveChatSession(session)} className="flex-1 sm:flex-none flex items-center justify-center text-sm bg-white text-gray-700 px-5 py-2.5 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 font-bold transition">
                                                         <MessageSquare className="w-4 h-4 mr-1.5" /> Chat
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => handleJoinStream(session)} 
-                                                        disabled={!isScheduled}
-                                                        title={!isScheduled ? 'Waiting for date & time to be set' : 'Join the session'}
-                                                        className="flex-1 sm:flex-none text-sm bg-primary text-white px-6 py-2.5 rounded-xl shadow-custom hover:bg-primary-hover font-bold transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    >
-                                                        Join Stream
                                                     </button>
                                                 </>
                                             )}

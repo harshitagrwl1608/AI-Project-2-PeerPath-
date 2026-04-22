@@ -73,7 +73,7 @@ router.post('/', async (req, res) => {
 // PATCH /api/sessions/:id - Update session
 router.patch('/:id', async (req, res) => {
     try {
-        const { status, date, time, meetLink, messages } = req.body;
+        const { status, date, time, messages } = req.body;
         const { id } = req.params;
 
         const updates = [];
@@ -83,7 +83,6 @@ router.patch('/:id', async (req, res) => {
         if (status !== undefined) { updates.push(`status = $${index++}`); values.push(status); }
         if (date !== undefined) { updates.push(`date = $${index++}`); values.push(date); }
         if (time !== undefined) { updates.push(`time = $${index++}`); values.push(time); }
-        if (meetLink !== undefined) { updates.push(`"meetLink" = $${index++}`); values.push(meetLink); }
         // Allow updating the full messages array (e.g., to persist reschedule accept/decline status)
         if (messages !== undefined) { updates.push(`messages = $${index++}`); values.push(JSON.stringify(messages)); }
 
