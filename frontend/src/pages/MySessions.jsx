@@ -57,9 +57,31 @@ const MySessions = () => {
         if (sessions.length > 0 && currentUser) resolvePeerNames();
     }, [sessions, currentUser]);
 
-    const handleJoinStream = (session) => {
-        showToast("Opening Google Meet...", "info");
-        window.open('https://meet.google.com/new', '_blank');
+    const handleJoinStream = async (session) => {
+        try {
+            let meetUrl = session.meetLink;
+
+            if (!meetUrl) {
+                // Generate a deterministic, Meet-style room code from the session ID.
+                // Both users will always compute the same code for the same session.
+                const raw = String(session.id).replace(/[^a-z0-9]/gi, '');
+                const seed = raw.padEnd(12, '0').slice(0, 12).toLowerCase();
+                const roomCode = `${seed.slice(0, 4)}-${seed.slice(4, 8)}-${seed.slice(8, 12)}`;
+                meetUrl = `https://meet.google.com/${roomCode}`;
+
+                // Persist so both peers always get the same link
+                await updateSession(session.id, { meetLink: meetUrl });
+                setSessions(prev =>
+                    prev.map(s => s.id === session.id ? { ...s, meetLink: meetUrl } : s)
+                );
+            }
+
+            showToast("Opening Google Meet…", "info");
+            window.open(meetUrl, '_blank');
+        } catch (err) {
+            console.error('handleJoinStream error:', err);
+            showToast("Could not open meeting. Please try again.", "error");
+        }
     };
 
     const handleConfirmRetract = async () => {
