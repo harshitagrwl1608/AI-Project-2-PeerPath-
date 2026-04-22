@@ -3,6 +3,13 @@ import pool from '../db.js';
 
 const router = express.Router();
 
+// Helper to generate a deterministic-looking Google Meet link
+const generateMeetLink = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyz';
+    const randomStr = (length) => Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    return `https://meet.google.com/${randomStr(3)}-${randomStr(4)}-${randomStr(3)}`;
+};
+
 // GET /api/sessions - Get all sessions where the user is requester or target
 router.get('/', async (req, res) => {
     try {
@@ -46,11 +53,16 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ error: 'Requester and target emails are required' });
         }
 
+        let sessionMeetLink = null;
+        if (date && time) {
+            sessionMeetLink = generateMeetLink();
+        }
+
         const query = `
             INSERT INTO sessions (
-                "requesterEmail", "targetUserEmail", status, skill, message, date, time, messages
+                "requesterEmail", "targetUserEmail", status, skill, message, date, time, messages, "meetLink"
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *;
         `;
         const values = [
@@ -58,7 +70,8 @@ router.post('/', async (req, res) => {
             status || 'pending', skill || null,
             message || null, 
             date || null, time || null, 
-            JSON.stringify(messages || [])
+            JSON.stringify(messages || []),
+            sessionMeetLink
         ];
 
         const result = await pool.query(query, values);
@@ -85,6 +98,13 @@ router.patch('/:id', async (req, res) => {
         if (time !== undefined) { updates.push(`time = $${index++}`); values.push(time); }
         // Allow updating the full messages array (e.g., to persist reschedule accept/decline status)
         if (messages !== undefined) { updates.push(`messages = $${index++}`); values.push(JSON.stringify(messages)); }
+
+        // If date and time are both updated (e.g., on reschedule), ensure meetLink is populated if missing.
+        if (date !== undefined && time !== undefined) {
+             const newLink = generateMeetLink();
+             updates.push(`"meetLink" = COALESCE("meetLink", $${index++})`);
+             values.push(newLink);
+        }
 
         if (updates.length === 0) {
             return res.status(400).json({ error: 'No fields to update' });

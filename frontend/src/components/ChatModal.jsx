@@ -83,16 +83,13 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate }) => {
             await updateMessageStatus(session.id, messageIndex, 'accepted');
 
             // 3. Update the session's scheduled date/time
-            await updateSession(session.id, {
+            const updatedSession = await updateSession(session.id, {
                 date: msg.proposedDate,
                 time: msg.proposedTime,
             });
 
-            // 4. Notify parent so the session card reflects the new date
-            onSessionUpdate(session.id, {
-                date: msg.proposedDate,
-                time: msg.proposedTime,
-            });
+            // 4. Notify parent so the session card reflects the new date and any new meetLink
+            onSessionUpdate(session.id, updatedSession);
 
             // 5. Append a visible system confirmation message for both users
             await addChatMessage(session.id, {

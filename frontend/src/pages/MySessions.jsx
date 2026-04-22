@@ -192,6 +192,11 @@ const MySessions = () => {
                                                     <button onClick={() => setActiveChatSession(session)} className="flex-1 sm:flex-none flex items-center justify-center text-sm bg-white text-gray-700 px-5 py-2.5 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 font-bold transition">
                                                         <MessageSquare className="w-4 h-4 mr-1.5" /> Chat
                                                     </button>
+                                                    {session.meetLink && (
+                                                        <a href={session.meetLink} target="_blank" rel="noopener noreferrer" className="flex-1 sm:flex-none flex items-center justify-center text-sm bg-indigo-50 text-indigo-600 px-5 py-2.5 rounded-xl border border-indigo-200 shadow-sm hover:bg-indigo-100 font-bold transition">
+                                                            <Video className="w-4 h-4 mr-1.5" /> Join Stream
+                                                        </a>
+                                                    )}
                                                 </>
                                             )}
                                             {session.status === 'pending' && (
