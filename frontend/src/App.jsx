@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import Layout from './components/layout/Layout';
@@ -57,6 +58,7 @@ function App() {
                     </Layout>
                 </ToastProvider>
             </AuthProvider>
+            <Analytics />
         </BrowserRouter>
     );
 }
