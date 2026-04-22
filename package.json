@@ -1,0 +1,13 @@
+{
+  "name": "peerpath-root",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm --prefix frontend run dev\" \"npm --prefix backend run dev\"",
+    "install-all": "npm install && npm --prefix frontend install && npm --prefix backend install"
+  },
+  "dependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
