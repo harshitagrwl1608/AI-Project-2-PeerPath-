@@ -82,13 +82,25 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate }) => {
             // 2. Atomically flip only this message's status in the DB
             await updateMessageStatus(session.id, messageIndex, 'accepted');
 
-            // 3. Update the session's scheduled date/time
+            // 3. Generate a shared Jitsi Meet room URL for this session
+            const meetUrl = getMeetUrl(session.id);
+
+            // 4. Update date/time AND persist the shared meetLink so
+            //    both users' "Join Stream" buttons are immediately ready
             await updateSession(session.id, {
                 date: msg.proposedDate,
                 time: msg.proposedTime,
+                meetLink: meetUrl,
             });
 
-            // 4. Append a visible system confirmation message for both users
+            // 5. Notify parent so the session card reflects the new date/link
+            onSessionUpdate(session.id, {
+                date: msg.proposedDate,
+                time: msg.proposedTime,
+                meetLink: meetUrl,
+            });
+
+            // 6. Append a visible system confirmation message for both users
             await addChatMessage(session.id, {
                 type: 'system',
                 text: `✓ ${currentUser?.displayName || 'Peer'} accepted: ${msg.proposedDateDisplay || msg.proposedDate} at ${msg.proposedTimeDisplay || msg.proposedTime}`,
@@ -140,6 +152,15 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate }) => {
 
     // Minimum date for the date picker (today)
     const today = new Date().toISOString().split('T')[0];
+
+    /**
+     * Deterministic Jitsi Meet room URL — same for both users since
+     * it is derived from the unique session ID. Mirrors MySessions.jsx.
+     */
+    const getMeetUrl = (sessionId) => {
+        const room = String(sessionId).replace(/-/g, '');
+        return `https://meet.jit.si/PeerPath-${room}`;
+    };
 
     return (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
