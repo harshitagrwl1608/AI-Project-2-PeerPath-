@@ -112,6 +112,31 @@ export const addChatMessage = async (sessionId, message) => {
 };
 
 /**
+ * Atomically update the status of a single message within a session.
+ * Uses PATCH /api/sessions/:id/messages/:msgIndex so the server-side
+ * jsonb_set only touches that one field, preventing race conditions.
+ */
+export const updateMessageStatus = async (sessionId, messageIndex, status) => {
+    if (!sessionId || String(sessionId).startsWith('local-')) {
+        // Offline fallback — update in localStorage
+        const stored = localStorage.getItem('peerpath_sessions') || '[]';
+        const sessions = JSON.parse(stored);
+        const idx = sessions.findIndex(s => s.id === sessionId);
+        if (idx > -1 && sessions[idx].messages?.[messageIndex]) {
+            sessions[idx].messages[messageIndex].status = status;
+            localStorage.setItem('peerpath_sessions', JSON.stringify(sessions));
+        }
+        return;
+    }
+    try {
+        await api.patch(`/api/sessions/${sessionId}/messages/${messageIndex}`, { status });
+    } catch (err) {
+        console.error('[sessionService] updateMessageStatus error:', err.message);
+        throw err;
+    }
+};
+
+/**
  * Poll a session for real-time-like updates.
  * Polls the API every 3 seconds while the chat is open.
  */

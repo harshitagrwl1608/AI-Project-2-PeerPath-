@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, Calendar, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
-import { addChatMessage, updateSession, onSessionSnapshot } from '../services/sessionService';
+import { addChatMessage, updateSession, updateMessageStatus, onSessionSnapshot } from '../services/sessionService';
 
 const ChatModal = ({ session, currentUser, onClose, onSessionUpdate }) => {
     const [messages, setMessages] = useState(session?.messages || []);
@@ -71,40 +71,69 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate }) => {
     const handleAcceptReschedule = async (messageIndex) => {
         const msg = messages[messageIndex];
 
-        const updatedMessages = [...messages];
-        updatedMessages[messageIndex] = { ...msg, status: 'accepted' };
-
-        const acceptMsgObj = {
-            type: 'system',
-            text: `✓ ${currentUser?.displayName || 'Peer'} accepted: ${msg.proposedDateDisplay || msg.proposedDate} at ${msg.proposedTimeDisplay || msg.proposedTime}`,
-            senderId: 'system',
-            timestamp: new Date().toISOString()
-        };
-        updatedMessages.push(acceptMsgObj);
-        setMessages(updatedMessages);
-
-        await updateSession(session.id, {
-            date: msg.proposedDate,
-            time: msg.proposedTime,
-            messages: updatedMessages
+        // 1. Optimistic UI update
+        setMessages(prev => {
+            const updated = [...prev];
+            updated[messageIndex] = { ...updated[messageIndex], status: 'accepted' };
+            return updated;
         });
+
+        try {
+            // 2. Atomically flip only this message's status in the DB
+            await updateMessageStatus(session.id, messageIndex, 'accepted');
+
+            // 3. Update the session's scheduled date/time
+            await updateSession(session.id, {
+                date: msg.proposedDate,
+                time: msg.proposedTime,
+            });
+
+            // 4. Append a visible system confirmation message for both users
+            await addChatMessage(session.id, {
+                type: 'system',
+                text: `✓ ${currentUser?.displayName || 'Peer'} accepted: ${msg.proposedDateDisplay || msg.proposedDate} at ${msg.proposedTimeDisplay || msg.proposedTime}`,
+                senderId: 'system',
+            });
+        } catch (err) {
+            console.error('handleAcceptReschedule error:', err);
+            // Revert optimistic update on failure
+            setMessages(prev => {
+                const reverted = [...prev];
+                reverted[messageIndex] = { ...reverted[messageIndex], status: 'pending' };
+                return reverted;
+            });
+        }
     };
 
     const handleDeclineReschedule = async (messageIndex) => {
         const msg = messages[messageIndex];
 
-        const updatedMessages = [...messages];
-        updatedMessages[messageIndex] = { ...msg, status: 'declined' };
+        // 1. Optimistic UI update
+        setMessages(prev => {
+            const updated = [...prev];
+            updated[messageIndex] = { ...updated[messageIndex], status: 'declined' };
+            return updated;
+        });
 
-        const declineMsgObj = {
-            type: 'system',
-            text: `✗ ${currentUser?.displayName || 'Peer'} declined the proposed time.`,
-            senderId: 'system',
-            timestamp: new Date().toISOString()
-        };
-        updatedMessages.push(declineMsgObj);
-        setMessages(updatedMessages);
-        await updateSession(session.id, { messages: updatedMessages });
+        try {
+            // 2. Atomically flip only this message's status in the DB
+            await updateMessageStatus(session.id, messageIndex, 'declined');
+
+            // 3. Append a system message for both users
+            await addChatMessage(session.id, {
+                type: 'system',
+                text: `✗ ${currentUser?.displayName || 'Peer'} declined the proposed time.`,
+                senderId: 'system',
+            });
+        } catch (err) {
+            console.error('handleDeclineReschedule error:', err);
+            // Revert optimistic update on failure
+            setMessages(prev => {
+                const reverted = [...prev];
+                reverted[messageIndex] = { ...reverted[messageIndex], status: 'pending' };
+                return reverted;
+            });
+        }
     };
 
     const currentUserId = currentUser?.email || 'demo-user';

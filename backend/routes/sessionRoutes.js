@@ -73,10 +73,9 @@ router.post('/', async (req, res) => {
 // PATCH /api/sessions/:id - Update session
 router.patch('/:id', async (req, res) => {
     try {
-        const { status, date, time, meetLink } = req.body;
+        const { status, date, time, meetLink, messages } = req.body;
         const { id } = req.params;
 
-        // Since frontend only updates specific fields via patch, we conditionally build query
         const updates = [];
         const values = [];
         let index = 1;
@@ -85,6 +84,8 @@ router.patch('/:id', async (req, res) => {
         if (date !== undefined) { updates.push(`date = $${index++}`); values.push(date); }
         if (time !== undefined) { updates.push(`time = $${index++}`); values.push(time); }
         if (meetLink !== undefined) { updates.push(`"meetLink" = $${index++}`); values.push(meetLink); }
+        // Allow updating the full messages array (e.g., to persist reschedule accept/decline status)
+        if (messages !== undefined) { updates.push(`messages = $${index++}`); values.push(JSON.stringify(messages)); }
 
         if (updates.length === 0) {
             return res.status(400).json({ error: 'No fields to update' });
@@ -100,6 +101,32 @@ router.patch('/:id', async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('Error updating session:', err);
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
+// PATCH /api/sessions/:id/messages/:msgIndex - Update a single message's status atomically
+router.patch('/:id/messages/:msgIndex', async (req, res) => {
+    try {
+        const { id, msgIndex } = req.params;
+        const { status } = req.body;
+
+        if (!status) return res.status(400).json({ error: 'status is required' });
+
+        // Use jsonb_set to update just the status field of the message at the given index
+        const result = await pool.query(`
+            UPDATE sessions
+            SET messages = jsonb_set(messages, '{${parseInt(msgIndex, 10)},status}', $1::jsonb, false)
+            WHERE id = $2
+            RETURNING *
+        `, [JSON.stringify(status), id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Session not found' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error updating message status:', err);
         res.status(500).json({ error: 'Server Error' });
     }
 });
