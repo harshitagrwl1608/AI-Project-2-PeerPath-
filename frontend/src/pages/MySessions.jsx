@@ -34,6 +34,29 @@ const MySessions = () => {
         fetchSessions();
     }, [currentUser]);
 
+    // Resolve peer name from the sessions data by fetching user profiles
+    const [peerNames, setPeerNames] = useState({});
+    useEffect(() => {
+        const resolvePeerNames = async () => {
+            const names = {};
+            for (const session of sessions) {
+                const isReq = session.requesterEmail === currentUser?.email;
+                const peerEmail = isReq ? session.targetUserEmail : session.requesterEmail;
+                if (peerEmail && !names[peerEmail]) {
+                    try {
+                        const { getUserProfile } = await import('../services/userService');
+                        const profile = await getUserProfile(peerEmail);
+                        names[peerEmail] = profile?.name || peerEmail;
+                    } catch {
+                        names[peerEmail] = peerEmail;
+                    }
+                }
+            }
+            setPeerNames(names);
+        };
+        if (sessions.length > 0 && currentUser) resolvePeerNames();
+    }, [sessions, currentUser]);
+
     const handleJoinStream = (session) => {
         showToast("Opening Google Meet...", "info");
         window.open('https://meet.google.com/new', '_blank');
@@ -121,10 +144,16 @@ const MySessions = () => {
                 <div className="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden">
                     <ul className="divide-y divide-gray-100">
                         {sessions.map(session => {
-                            const isRequester = session.requesterId === currentUser?.email;
-                            const peerId = isRequester ? session.receiverId : session.requesterId;
-                            const displayType = isRequester ? (session.type || 'Learning') : 'Teaching';
-                            const peerName = isRequester ? session.peerName : (session.requesterName || 'Peer');
+                            // FIX: use requesterEmail (actual DB column name)
+                            const isRequester = session.requesterEmail === currentUser?.email;
+                            const peerEmail = isRequester ? session.targetUserEmail : session.requesterEmail;
+                            const displayType = isRequester ? 'Learning' : 'Teaching';
+                            const peerName = peerNames[peerEmail] || peerEmail || 'Peer';
+
+                            // FIX: date/time may be null — display TBD
+                            const displayDate = session.date ? new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD';
+                            const displayTime = session.time || 'TBD';
+                            const isScheduled = !!session.date && !!session.time;
 
                             return (
                             <li key={session.id} className="p-6 hover:bg-gray-50 transition duration-200">
@@ -144,17 +173,15 @@ const MySessions = () => {
                                                 </span>
                                             </div>
                                             <h3 className="text-xl font-bold text-gray-900 leading-tight">
-                                                {session.skill} <span className="text-gray-400 font-medium mx-1">with</span> <button onClick={() => setShowProfileId(peerId || 'demo-1')} className="text-primary hover:underline">{peerName}</button>
+                                                {session.skill} <span className="text-gray-400 font-medium mx-1">with</span> <button onClick={() => setShowProfileId(peerEmail)} className="text-primary hover:underline">{peerName}</button>
                                             </h3>
                                             <div className="flex flex-wrap items-center text-sm font-medium text-gray-500 mt-2 gap-4">
                                                 <span className="flex items-center bg-white px-2.5 py-1 rounded-md border border-gray-200 shadow-sm">
-                                                    <Calendar className="w-4 h-4 mr-1.5 text-gray-400" /> {session.date}
+                                                    <Calendar className="w-4 h-4 mr-1.5 text-gray-400" /> {displayDate}
                                                 </span>
-                                                {session.time && (
-                                                    <span className="flex items-center bg-white px-2.5 py-1 rounded-md border border-gray-200 shadow-sm">
-                                                        <Clock className="w-4 h-4 mr-1.5 text-gray-400" /> {session.time}
-                                                    </span>
-                                                )}
+                                                <span className="flex items-center bg-white px-2.5 py-1 rounded-md border border-gray-200 shadow-sm">
+                                                    <Clock className="w-4 h-4 mr-1.5 text-gray-400" /> {displayTime}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -169,7 +196,12 @@ const MySessions = () => {
                                                     <button onClick={() => setActiveChatSession(session)} className="flex-1 sm:flex-none flex items-center justify-center text-sm bg-white text-gray-700 px-5 py-2.5 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 font-bold transition">
                                                         <MessageSquare className="w-4 h-4 mr-1.5" /> Chat
                                                     </button>
-                                                    <button onClick={() => handleJoinStream(session)} className="flex-1 sm:flex-none text-sm bg-primary text-white px-6 py-2.5 rounded-xl shadow-custom hover:bg-primary-hover font-bold transition">
+                                                    <button 
+                                                        onClick={() => handleJoinStream(session)} 
+                                                        disabled={!isScheduled}
+                                                        title={!isScheduled ? 'Waiting for date & time to be set' : 'Join the session'}
+                                                        className="flex-1 sm:flex-none text-sm bg-primary text-white px-6 py-2.5 rounded-xl shadow-custom hover:bg-primary-hover font-bold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
                                                         Join Stream
                                                     </button>
                                                 </>

@@ -15,16 +15,12 @@ const SkillCard = ({ user }) => {
         if (requesting) return;
         setRequesting(true);
 
-        const userId = user.email || user.id || user.firebaseUid; // Handle all ID formats
+        const targetEmail = user.email || user.id || user.firebaseUid;
         const sessionData = {
-            peerName: user.name || 'Student',
-            targetUserEmail: userId, 
-            receiverId: userId, // Keep for legacy compat if needed
-            requesterName: userProfile?.name || currentUser?.displayName || 'Student',
+            targetUserEmail: targetEmail,
             skill: user.skillsTeach?.length ? user.skillsTeach[0] : 'General',
-            type: 'Learning',
-            date: 'TBD',
-            time: 'TBD',
+            status: 'pending',
+            // date and time are left null until the target user confirms
         };
 
         try {

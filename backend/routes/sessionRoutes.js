@@ -39,7 +39,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/sessions - Create a session
 router.post('/', async (req, res) => {
     try {
-        const { targetUserEmail, status, message, date, time, messages } = req.body;
+        const { targetUserEmail, status, skill, message, date, time, messages } = req.body;
         const requesterEmail = req.headers['x-user-email'] || req.body.requesterEmail;
 
         if (!requesterEmail || !targetUserEmail) {
@@ -48,14 +48,15 @@ router.post('/', async (req, res) => {
 
         const query = `
             INSERT INTO sessions (
-                "requesterEmail", "targetUserEmail", status, message, date, time, messages
+                "requesterEmail", "targetUserEmail", status, skill, message, date, time, messages
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *;
         `;
         const values = [
             requesterEmail, targetUserEmail, 
-            status || 'pending', message || null, 
+            status || 'pending', skill || null,
+            message || null, 
             date || null, time || null, 
             JSON.stringify(messages || [])
         ];

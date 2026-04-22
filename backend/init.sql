@@ -21,9 +21,10 @@ CREATE TABLE IF NOT EXISTS sessions (
     "requesterEmail" VARCHAR REFERENCES users(email),
     "targetUserEmail" VARCHAR REFERENCES users(email),
     status VARCHAR DEFAULT 'pending',
+    skill VARCHAR,
     message TEXT,
-    date DATE,
-    time TIME,
+    date VARCHAR,
+    time VARCHAR,
     "meetLink" VARCHAR,
     messages JSONB DEFAULT '[]'::JSONB,
     "createdAt" TIMESTAMP DEFAULT NOW()
