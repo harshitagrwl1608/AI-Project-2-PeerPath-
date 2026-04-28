@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { BookOpen, User, Home, Monitor } from 'lucide-react';
+import { BookOpen, User, Home, Monitor, Shield } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+
+const ADMIN_EMAIL = 'harshitagrwl1608@gmail.com';
 
 const Navbar = () => {
     const { currentUser, logout } = useAuth();
@@ -36,6 +38,11 @@ const Navbar = () => {
                                 <Link to="/sessions" className="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium flex items-center transition">
                                     <Monitor className="h-4 w-4 mr-1" /> <span className="hidden sm:inline">Sessions</span>
                                 </Link>
+                                {currentUser?.email === ADMIN_EMAIL && (
+                                    <Link to="/admin" className="text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-semibold flex items-center transition shadow-md">
+                                        <Shield className="h-4 w-4 mr-1" /> <span className="hidden sm:inline">Admin</span>
+                                    </Link>
+                                )}
                                 <div className="relative">
                                     <button
                                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}

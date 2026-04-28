@@ -3,6 +3,9 @@ import pool from '../db.js';
 
 const router = express.Router();
 
+const ADMIN_EMAIL = 'harshitagrwl1608@gmail.com';
+const isAdmin = (req) => req.headers['x-user-email'] === ADMIN_EMAIL;
+
 // GET /api/users - Fetch all users (for discovery feed)
 router.get('/', async (req, res) => {
     try {
@@ -78,6 +81,30 @@ router.post('/', async (req, res) => {
 
     } catch (err) {
         console.error('Error saving user profile:', err);
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
+// DELETE /api/users/:email - Admin: Remove a user and all their sessions
+router.delete('/:email', async (req, res) => {
+    try {
+        if (!isAdmin(req)) {
+            return res.status(403).json({ error: 'Forbidden: Admin access required' });
+        }
+        const { email } = req.params;
+        // Delete all sessions for this user first (avoids FK constraint errors)
+        await pool.query(
+            'DELETE FROM sessions WHERE "requesterEmail" = $1 OR "targetUserEmail" = $1',
+            [email]
+        );
+        // Now delete the user
+        const result = await pool.query('DELETE FROM users WHERE email = $1 RETURNING *', [email]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({ success: true, removed: result.rows[0] });
+    } catch (err) {
+        console.error('Error removing user (admin):', err);
         res.status(500).json({ error: 'Server Error' });
     }
 });

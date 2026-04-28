@@ -4,11 +4,39 @@ import crypto from 'crypto';
 
 const router = express.Router();
 
+const ADMIN_EMAIL = 'harshitagrwl1608@gmail.com';
+
+const isAdmin = (req) => req.headers['x-user-email'] === ADMIN_EMAIL;
+
 // Helper to generate a unique Jitsi Meet link
 const generateMeetLink = () => {
     const randomHex = crypto.randomBytes(16).toString('hex');
     return `https://meet.jit.si/PeerPath-${randomHex}`;
 };
+
+// GET /api/sessions/all - Admin: Get ALL sessions across the platform
+router.get('/all', async (req, res) => {
+    try {
+        if (!isAdmin(req)) {
+            return res.status(403).json({ error: 'Forbidden: Admin access required' });
+        }
+        const query = `
+            SELECT 
+                s.*,
+                u_req.name AS "requesterName",
+                u_target.name AS "targetUserName"
+            FROM sessions s
+            LEFT JOIN users u_req ON s."requesterEmail" = u_req.email
+            LEFT JOIN users u_target ON s."targetUserEmail" = u_target.email
+            ORDER BY s."createdAt" DESC
+        `;
+        const result = await pool.query(query);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching all sessions (admin):', err);
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
 
 // GET /api/sessions - Get all sessions where the user is requester or target
 router.get('/', async (req, res) => {

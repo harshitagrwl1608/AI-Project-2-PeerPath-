@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import ProfileSetup from './pages/ProfileSetup';
 import DiscoveryFeed from './pages/DiscoveryFeed';
 import MySessions from './pages/MySessions';
+import AdminDashboard from './pages/AdminDashboard';
 
 // Simple PrivateRoute wrapper restricting access to logged-in users
 const PrivateRoute = ({ children, requireProfile = false }) => {
@@ -51,6 +52,11 @@ function App() {
                             <Route path="/sessions" element={
                                 <PrivateRoute requireProfile={true}>
                                     <MySessions />
+                                </PrivateRoute>
+                            } />
+                            <Route path="/admin" element={
+                                <PrivateRoute>
+                                    <AdminDashboard />
                                 </PrivateRoute>
                             } />
                         </Routes>
