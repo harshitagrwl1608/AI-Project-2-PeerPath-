@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     rating NUMERIC,
     "totalSessions" INTEGER DEFAULT 0,
     password VARCHAR,
+    availability JSONB DEFAULT '{}'::JSONB,
     "createdAt" TIMESTAMP DEFAULT NOW()
 );
 

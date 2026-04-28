@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Calendar, AlertCircle, CheckCircle2, XCircle, Flag } from 'lucide-react';
+import { X, Send, Calendar, AlertCircle, CheckCircle2, XCircle, Flag, Loader2 } from 'lucide-react';
 import { addChatMessage, updateSession, updateMessageStatus, onSessionSnapshot } from '../services/sessionService';
+import { getUserProfile } from '../services/userService';
 import ReportModal from './ReportModal';
 
 const ChatModal = ({ session, currentUser, onClose, onSessionUpdate, onCompleteSession }) => {
@@ -10,6 +11,9 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate, onCompleteS
     const [newDate, setNewDate] = useState('');
     const [newTime, setNewTime] = useState('');
     const [showReportModal, setShowReportModal] = useState(false);
+    const [peerProfile, setPeerProfile] = useState(null);
+    const [availableDates, setAvailableDates] = useState([]);
+    const [availableTimes, setAvailableTimes] = useState([]);
     const messagesEndRef = useRef(null);
 
     // Auto-scroll to bottom when messages update
@@ -19,12 +23,61 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate, onCompleteS
 
     useEffect(() => {
         if (!session?.id) return;
+        
+        // Fetch peer profile to get availability
+        const fetchPeer = async () => {
+            const email = session.requesterEmail === currentUser?.email ? session.targetUserEmail : session.requesterEmail;
+            const profile = await getUserProfile(email);
+            setPeerProfile(profile);
+            
+            // If they have availability, generate next 14 valid days
+            if (profile?.availability && Object.values(profile.availability).some(slots => slots.length > 0)) {
+                const validDays = [];
+                const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                for (let i = 1; i <= 14; i++) {
+                    const d = new Date();
+                    d.setDate(d.getDate() + i);
+                    const dayName = daysOfWeek[d.getDay()];
+                    if (profile.availability[dayName] && profile.availability[dayName].length > 0) {
+                        validDays.push({
+                            dateStr: d.toISOString().split('T')[0],
+                            display: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+                            dayName
+                        });
+                    }
+                }
+                setAvailableDates(validDays);
+            }
+        };
+        fetchPeer();
+
         const unsubscribe = onSessionSnapshot(session.id, (updatedSession) => {
             setMessages(updatedSession.messages || []);
             onSessionUpdate(session.id, updatedSession);
         });
         return () => unsubscribe();
-    }, [session?.id, onSessionUpdate]);
+    }, [session?.id, onSessionUpdate, currentUser?.email]);
+
+    // When date changes, generate time slots
+    useEffect(() => {
+        if (!newDate || !peerProfile?.availability) return;
+        const selectedObj = availableDates.find(d => d.dateStr === newDate);
+        if (!selectedObj) return;
+
+        const slotsForDay = peerProfile.availability[selectedObj.dayName] || [];
+        const times = [];
+        slotsForDay.forEach(slot => {
+            // Generate 30 min intervals between start and end
+            let current = new Date(`1970-01-01T${slot.start}:00`);
+            const end = new Date(`1970-01-01T${slot.end}:00`);
+            while (current < end) {
+                times.push(current.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }));
+                current.setMinutes(current.getMinutes() + 30);
+            }
+        });
+        setAvailableTimes(times);
+        setNewTime(''); // reset time
+    }, [newDate, peerProfile, availableDates]);
 
     const handleSendText = async (e) => {
         e?.preventDefault();
@@ -281,24 +334,53 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate, onCompleteS
                         <form onSubmit={handleProposeReschedule} className="flex gap-2 items-center">
                             <div className="flex-1">
                                 <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide block mb-1">Date</label>
-                                <input
-                                    type="date"
-                                    min={today}
-                                    className="w-full text-sm px-3 py-1.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50"
-                                    value={newDate}
-                                    onChange={(e) => setNewDate(e.target.value)}
-                                    required
-                                />
+                                {availableDates.length > 0 ? (
+                                    <select
+                                        className="w-full text-sm px-3 py-1.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50"
+                                        value={newDate}
+                                        onChange={(e) => setNewDate(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Select Date</option>
+                                        {availableDates.map(d => (
+                                            <option key={d.dateStr} value={d.dateStr}>{d.display}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <input
+                                        type="date"
+                                        min={today}
+                                        className="w-full text-sm px-3 py-1.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50"
+                                        value={newDate}
+                                        onChange={(e) => setNewDate(e.target.value)}
+                                        required
+                                    />
+                                )}
                             </div>
                             <div className="flex-1">
                                 <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide block mb-1">Time</label>
-                                <input
-                                    type="time"
-                                    className="w-full text-sm px-3 py-1.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50"
-                                    value={newTime}
-                                    onChange={(e) => setNewTime(e.target.value)}
-                                    required
-                                />
+                                {availableDates.length > 0 ? (
+                                    <select
+                                        className="w-full text-sm px-3 py-1.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50"
+                                        value={newTime}
+                                        onChange={(e) => setNewTime(e.target.value)}
+                                        required
+                                        disabled={!newDate}
+                                    >
+                                        <option value="">Select Time</option>
+                                        {availableTimes.map(t => (
+                                            <option key={t} value={t}>{t}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <input
+                                        type="time"
+                                        className="w-full text-sm px-3 py-1.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50"
+                                        value={newTime}
+                                        onChange={(e) => setNewTime(e.target.value)}
+                                        required
+                                    />
+                                )}
                             </div>
                             <div className="pt-4">
                                 <button

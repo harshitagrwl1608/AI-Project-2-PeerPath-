@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, AlertCircle, Loader2, Search, X, Star } from 'lucide-react';
+import { BookOpen, AlertCircle, Loader2, Search, X, Star, Clock, Plus, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { saveUserProfile } from '../services/userService';
 import { SKILLS_OPTIONS } from '../data/mockData';
@@ -18,7 +18,10 @@ const ProfileSetup = () => {
         email: userProfile?.email || '', 
         showEmail: userProfile?.showEmail || false,
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        availability: userProfile?.availability && Object.keys(userProfile?.availability).length > 0 
+            ? userProfile.availability 
+            : { Monday: [], Tuesday: [], Wednesday: [], Thursday: [], Friday: [], Saturday: [], Sunday: [] }
     });
     const [errors, setErrors] = useState({});
     const [saving, setSaving] = useState(false);
@@ -35,7 +38,10 @@ const ProfileSetup = () => {
                 skillsTeach: userProfile.skillsTeach || [],
                 skillsLearn: userProfile.skillsLearn || [],
                 email: userProfile.email || '',
-                showEmail: userProfile.showEmail || false
+                showEmail: userProfile.showEmail || false,
+                availability: userProfile.availability && Object.keys(userProfile.availability).length > 0 
+                    ? userProfile.availability 
+                    : { Monday: [], Tuesday: [], Wednesday: [], Thursday: [], Friday: [], Saturday: [], Sunday: [] }
             }));
         } else if (currentUser?.email && !formData.email) {
             setFormData(prev => ({ ...prev, email: currentUser.email }));
@@ -69,6 +75,15 @@ const ProfileSetup = () => {
             else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters.';
             if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match.';
         }
+
+        // Validate availability slots (end time must be after start time)
+        Object.entries(formData.availability).forEach(([day, slots]) => {
+            slots.forEach((slot, index) => {
+                if (slot.start && slot.end && slot.start >= slot.end) {
+                    newErrors[`availability_${day}`] = `${day}: End time must be after start time.`;
+                }
+            });
+        });
         
         return newErrors;
     };
@@ -93,7 +108,8 @@ const ProfileSetup = () => {
             rating: userProfile?.rating || null,
             totalSessions: userProfile?.totalSessions || 0,
             createdAt: userProfile?.createdAt || new Date().toISOString(),
-            ...(formData.password ? { password: formData.password } : {})
+            ...(formData.password ? { password: formData.password } : {}),
+            availability: formData.availability
         };
 
         console.log('Saving profile:', newProfile);
@@ -202,6 +218,126 @@ const ProfileSetup = () => {
                     </div>
                 )}
                 <FieldError field={type} />
+            </div>
+        );
+    };
+
+    const AvailabilitySection = () => {
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        const handleAddSlot = (day) => {
+            setFormData(prev => ({
+                ...prev,
+                availability: {
+                    ...prev.availability,
+                    [day]: [...prev.availability[day], { start: '09:00', end: '17:00' }]
+                }
+            }));
+        };
+
+        const handleRemoveSlot = (day, index) => {
+            setFormData(prev => ({
+                ...prev,
+                availability: {
+                    ...prev.availability,
+                    [day]: prev.availability[day].filter((_, i) => i !== index)
+                }
+            }));
+        };
+
+        const handleUpdateSlot = (day, index, field, value) => {
+            setFormData(prev => {
+                const newSlots = [...prev.availability[day]];
+                newSlots[index] = { ...newSlots[index], [field]: value };
+                return {
+                    ...prev,
+                    availability: { ...prev.availability, [day]: newSlots }
+                };
+            });
+            if (errors[`availability_${day}`]) {
+                setErrors(prev => ({ ...prev, [`availability_${day}`]: '' }));
+            }
+        };
+
+        return (
+            <div className="border-t border-gray-100 pt-6">
+                <div className="mb-4">
+                    <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                        <Clock className="w-5 h-5 text-indigo-500" /> Weekly Availability
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">Set your available hours for mentoring sessions.</p>
+                </div>
+                
+                <div className="space-y-4">
+                    {days.map(day => {
+                        const slots = formData.availability[day] || [];
+                        const isAvailable = slots.length > 0;
+
+                        return (
+                            <div key={day} className="flex flex-col sm:flex-row sm:items-start gap-3 p-3 bg-gray-50/50 rounded-xl border border-gray-100">
+                                <div className="w-32 pt-2 flex items-center gap-2 shrink-0">
+                                    <input
+                                        type="checkbox"
+                                        checked={isAvailable}
+                                        onChange={(e) => {
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                availability: {
+                                                    ...prev.availability,
+                                                    [day]: e.target.checked ? [{ start: '09:00', end: '17:00' }] : []
+                                                }
+                                            }));
+                                        }}
+                                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                                    />
+                                    <span className={`text-sm font-medium ${isAvailable ? 'text-gray-900' : 'text-gray-400'}`}>{day}</span>
+                                </div>
+                                
+                                <div className="flex-1 space-y-2">
+                                    {!isAvailable ? (
+                                        <span className="text-sm text-gray-400 italic pt-2 block">Unavailable</span>
+                                    ) : (
+                                        slots.map((slot, idx) => (
+                                            <div key={idx} className="flex items-center gap-2">
+                                                <input 
+                                                    type="time" 
+                                                    value={slot.start} 
+                                                    onChange={e => handleUpdateSlot(day, idx, 'start', e.target.value)}
+                                                    className="px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
+                                                />
+                                                <span className="text-gray-400">-</span>
+                                                <input 
+                                                    type="time" 
+                                                    value={slot.end} 
+                                                    onChange={e => handleUpdateSlot(day, idx, 'end', e.target.value)}
+                                                    className="px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
+                                                />
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => handleRemoveSlot(day, idx)}
+                                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition"
+                                                    title="Remove Slot"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))
+                                    )}
+                                    {isAvailable && (
+                                        <button 
+                                            type="button" 
+                                            onClick={() => handleAddSlot(day)}
+                                            className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center gap-1 mt-1"
+                                        >
+                                            <Plus className="w-3 h-3" /> Add Slot
+                                        </button>
+                                    )}
+                                    <FieldError field={`availability_${day}`} />
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         );
     };
@@ -369,8 +505,10 @@ const ProfileSetup = () => {
                     </div>
                 )}
 
+                <AvailabilitySection />
+
                 <SkillSection 
-                    type="skillsTeach" 
+                    type="skillsTeach"  
                     title="Skills I can Teach" 
                     placeholder="Search or type a new skill and press Enter..." 
                     colorClass="text-primary"

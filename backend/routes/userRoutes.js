@@ -41,7 +41,8 @@ router.post('/', async (req, res) => {
         const {
             email, name, college, year, branch,
             skillsTeach, skillsLearn, showEmail,
-            requestsUsed, plan, rating, totalSessions, password
+            requestsUsed, plan, rating, totalSessions, password,
+            availability
         } = req.body;
 
         if (!email) {
@@ -57,7 +58,37 @@ router.post('/', async (req, res) => {
                 INSERT INTO users (
                     email, name, college, year, branch, 
                     "skillsTeach", "skillsLearn", "showEmail", 
-                    "requestsUsed", plan, rating, "totalSessions", password
+                    "requestsUsed", plan, rating, "totalSessions", password, availability
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                ON CONFLICT (email) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    college = EXCLUDED.college,
+                    year = EXCLUDED.year,
+                    branch = EXCLUDED.branch,
+                    "skillsTeach" = EXCLUDED."skillsTeach",
+                    "skillsLearn" = EXCLUDED."skillsLearn",
+                    "showEmail" = EXCLUDED."showEmail",
+                    "requestsUsed" = EXCLUDED."requestsUsed",
+                    plan = EXCLUDED.plan,
+                    rating = EXCLUDED.rating,
+                    "totalSessions" = EXCLUDED."totalSessions",
+                    password = COALESCE(EXCLUDED.password, users.password),
+                    availability = EXCLUDED.availability
+                RETURNING *;
+            `;
+            values = [
+                email, name || null, college || null, year || null, branch || null,
+                JSON.stringify(skillsTeach || []), JSON.stringify(skillsLearn || []),
+                showEmail || false, requestsUsed || 0, plan || 'free', 
+                rating || null, totalSessions || 0, hashedPassword, JSON.stringify(availability || {})
+            ];
+        } else {
+            query = `
+                INSERT INTO users (
+                    email, name, college, year, branch, 
+                    "skillsTeach", "skillsLearn", "showEmail", 
+                    "requestsUsed", plan, rating, "totalSessions", availability
                 )
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                 ON CONFLICT (email) DO UPDATE SET
@@ -72,42 +103,14 @@ router.post('/', async (req, res) => {
                     plan = EXCLUDED.plan,
                     rating = EXCLUDED.rating,
                     "totalSessions" = EXCLUDED."totalSessions",
-                    password = COALESCE(EXCLUDED.password, users.password)
+                    availability = EXCLUDED.availability
                 RETURNING *;
             `;
             values = [
                 email, name || null, college || null, year || null, branch || null,
                 JSON.stringify(skillsTeach || []), JSON.stringify(skillsLearn || []),
                 showEmail || false, requestsUsed || 0, plan || 'free', 
-                rating || null, totalSessions || 0, hashedPassword
-            ];
-        } else {
-            query = `
-                INSERT INTO users (
-                    email, name, college, year, branch, 
-                    "skillsTeach", "skillsLearn", "showEmail", 
-                    "requestsUsed", plan, rating, "totalSessions"
-                )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-                ON CONFLICT (email) DO UPDATE SET
-                    name = EXCLUDED.name,
-                    college = EXCLUDED.college,
-                    year = EXCLUDED.year,
-                    branch = EXCLUDED.branch,
-                    "skillsTeach" = EXCLUDED."skillsTeach",
-                    "skillsLearn" = EXCLUDED."skillsLearn",
-                    "showEmail" = EXCLUDED."showEmail",
-                    "requestsUsed" = EXCLUDED."requestsUsed",
-                    plan = EXCLUDED.plan,
-                    rating = EXCLUDED.rating,
-                    "totalSessions" = EXCLUDED."totalSessions"
-                RETURNING *;
-            `;
-            values = [
-                email, name || null, college || null, year || null, branch || null,
-                JSON.stringify(skillsTeach || []), JSON.stringify(skillsLearn || []),
-                showEmail || false, requestsUsed || 0, plan || 'free', 
-                rating || null, totalSessions || 0
+                rating || null, totalSessions || 0, JSON.stringify(availability || {})
             ];
         }
 
