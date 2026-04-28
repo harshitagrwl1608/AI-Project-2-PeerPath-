@@ -86,7 +86,7 @@ router.post('/', async (req, res) => {
 // PATCH /api/sessions/:id - Update session
 router.patch('/:id', async (req, res) => {
     try {
-        const { status, date, time, messages } = req.body;
+        const { status, date, time, messages, rating, feedback, peerEmail } = req.body;
         const { id } = req.params;
 
         const updates = [];
@@ -96,6 +96,8 @@ router.patch('/:id', async (req, res) => {
         if (status !== undefined) { updates.push(`status = $${index++}`); values.push(status); }
         if (date !== undefined) { updates.push(`date = $${index++}`); values.push(date); }
         if (time !== undefined) { updates.push(`time = $${index++}`); values.push(time); }
+        if (rating !== undefined) { updates.push(`rating = $${index++}`); values.push(rating); }
+        if (feedback !== undefined) { updates.push(`feedback = $${index++}`); values.push(feedback); }
         // Allow updating the full messages array (e.g., to persist reschedule accept/decline status)
         if (messages !== undefined) { updates.push(`messages = $${index++}`); values.push(JSON.stringify(messages)); }
 
@@ -117,6 +119,29 @@ router.patch('/:id', async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Session not found' });
         }
+
+        // If rating a session, update peer's profile
+        if (status === 'rated' && rating !== undefined && peerEmail) {
+            // First, increment totalSessions
+            await pool.query(`UPDATE users SET "totalSessions" = "totalSessions" + 1 WHERE email = $1`, [peerEmail]);
+            
+            // Recalculate average rating for this peer
+            const avgRes = await pool.query(`
+                SELECT AVG(rating) as avg_rating 
+                FROM sessions 
+                WHERE ("requesterEmail" = $1 OR "targetUserEmail" = $1) 
+                  AND status = 'rated' 
+                  AND rating IS NOT NULL
+            `, [peerEmail]);
+            
+            if (avgRes.rows.length > 0 && avgRes.rows[0].avg_rating) {
+                const newAvg = parseFloat(avgRes.rows[0].avg_rating).toFixed(1);
+                await pool.query(`UPDATE users SET rating = $1 WHERE email = $2`, [newAvg, peerEmail]);
+            } else {
+                await pool.query(`UPDATE users SET rating = $1 WHERE email = $2`, [rating, peerEmail]);
+            }
+        }
+
         res.json(result.rows[0]);
     } catch (err) {
         console.error('Error updating session:', err);

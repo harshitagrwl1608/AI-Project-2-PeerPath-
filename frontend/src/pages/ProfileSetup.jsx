@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, AlertCircle, Loader2, Search, X } from 'lucide-react';
+import { BookOpen, AlertCircle, Loader2, Search, X, Star } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { saveUserProfile } from '../services/userService';
 import { SKILLS_OPTIONS } from '../data/mockData';
@@ -199,8 +199,27 @@ const ProfileSetup = () => {
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
             <div className="text-center mb-8">
                 <BookOpen className="mx-auto h-10 w-10 text-primary mb-3" />
-                <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Complete Your Profile</h2>
+                <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">{userProfile ? 'My Profile' : 'Complete Your Profile'}</h2>
                 <p className="text-gray-500 mt-2">Let others know what you can teach and what you want to learn.</p>
+                {userProfile && (
+                    <div className="flex justify-center gap-6 mt-6 py-4 border-y border-gray-100 bg-gray-50/50 rounded-xl">
+                        <div className="text-center px-4">
+                            <div className="flex items-center justify-center gap-1 text-gray-900 font-bold mb-1 text-lg">
+                                <Star className="w-5 h-5 text-amber fill-amber text-amber-400" /> 
+                                {userProfile.rating ? Number(userProfile.rating).toFixed(1) : 'New'}
+                            </div>
+                            <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Rating</span>
+                        </div>
+                        <div className="w-px h-12 bg-gray-200"></div>
+                        <div className="text-center px-4">
+                            <div className="flex items-center justify-center gap-1 text-gray-900 font-bold mb-1 text-lg">
+                                <BookOpen className="w-5 h-5 text-primary" /> 
+                                {userProfile.totalSessions || 0}
+                            </div>
+                            <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Lectures</span>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6" noValidate>

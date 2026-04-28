@@ -107,7 +107,10 @@ const MySessions = () => {
         }
         setIsSubmitting(true);
         try {
-            await updateSession(rateSession.id, { status: 'rated', rating, feedback });
+            const isRequester = rateSession.requesterEmail === currentUser?.email;
+            const peerEmail = isRequester ? rateSession.targetUserEmail : rateSession.requesterEmail;
+            
+            await updateSession(rateSession.id, { status: 'rated', rating, feedback, peerEmail });
             setSessions(prev => prev.map(s => s.id === rateSession.id ? { ...s, status: 'rated', rating, feedback } : s));
             showToast("Review submitted successfully! Thank you.", "success");
         } catch (err) {
