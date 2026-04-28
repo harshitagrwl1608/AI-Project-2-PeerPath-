@@ -19,7 +19,7 @@ const AdminLogin = () => {
         e.preventDefault();
         setError('');
 
-        if (email.trim() !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+        if (email.trim().toLowerCase() !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
             setError('Invalid admin credentials. Access denied.');
             return;
         }
