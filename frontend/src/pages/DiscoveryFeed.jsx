@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SkillCard from '../components/SkillCard';
-import { Search, Filter, Loader2 } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { getAllUsers } from '../services/userService';
 import { useAuth } from '../context/AuthContext';
 
@@ -90,9 +90,6 @@ const DiscoveryFeed = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <button className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-medium shadow-sm transition">
-                        <Filter className="w-4 h-4 mr-2" /> Filter
-                    </button>
                 </div>
             </div>
 
