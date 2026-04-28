@@ -84,16 +84,13 @@ const SkillCard = ({ user }) => {
                     <button
                         onClick={handleRequestSession}
                         disabled={requesting}
-                        className="text-sm font-semibold text-primary hover:text-primary-hover flex items-center transition bg-tag-bg hover:bg-tag-bg/80 px-4 py-2 rounded-[12px] disabled:opacity-60"
+                        className="text-sm font-semibold text-primary hover:text-primary-hover flex items-center transition bg-tag-bg hover:bg-tag-bg/80 px-4 py-2 rounded-[12px] disabled:opacity-60 w-full justify-center"
                     >
                         {requesting ? (
                             <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> Sending...</>
                         ) : (
                             <>Request Session <ArrowRight className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition" /></>
                         )}
-                    </button>
-                    <button onClick={() => setShowProfile(true)} className="text-gray-400 hover:text-primary transition p-2 bg-gray-50 rounded-full hover:bg-tag-bg">
-                        <MessageCircle className="w-4 h-4" />
                     </button>
                 </div>
             </div>
