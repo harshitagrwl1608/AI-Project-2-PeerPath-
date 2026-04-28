@@ -221,7 +221,7 @@ const Login = () => {
 
             {/* Floating OTP Link for Prototype */}
             {previewUrl && (
-                <div className="fixed bottom-8 right-8 max-w-sm bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-5 border border-indigo-100 z-50 animate-[bounce_1s_infinite]">
+                <div className="fixed bottom-8 right-8 max-w-sm bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-5 border border-indigo-100 z-50">
                     <div className="flex items-start gap-4">
                         <div className="bg-indigo-50 p-2.5 rounded-xl shrink-0">
                             <Mail className="w-6 h-6 text-primary" />
