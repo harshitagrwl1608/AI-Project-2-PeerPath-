@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, Calendar, AlertCircle, CheckCircle2, XCircle, Flag } from 'lucide-react';
 import { addChatMessage, updateSession, updateMessageStatus, onSessionSnapshot } from '../services/sessionService';
 import ReportModal from './ReportModal';
