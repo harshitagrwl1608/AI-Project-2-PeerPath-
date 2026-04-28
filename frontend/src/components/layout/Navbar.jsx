@@ -75,7 +75,15 @@ const Navbar = () => {
                                     )}
                                 </div>
                             </>
-                        ) : null}
+                        ) : (
+                            <Link
+                                to="/admin-login"
+                                className="flex items-center gap-1.5 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-primary-hover transition shadow-custom"
+                            >
+                                <Shield className="h-4 w-4" />
+                                Admin Login
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>

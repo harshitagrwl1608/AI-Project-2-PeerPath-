@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Shield, Eye, EyeOff, AlertCircle, Lock } from 'lucide-react';
+import { Shield, Eye, EyeOff, AlertCircle, Lock, BookOpen } from 'lucide-react';
 
 const ADMIN_EMAIL = 'Admin@gmail.com';
 const ADMIN_PASSWORD = 'Admin123';
@@ -37,29 +37,23 @@ const AdminLogin = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex flex-col items-center justify-center px-4">
-            {/* Back to user login */}
-            <Link
-                to="/login"
-                className="text-indigo-400 hover:text-indigo-200 text-sm mb-10 flex items-center gap-1.5 transition"
-            >
-                ← Back to Student Login
-            </Link>
-
-            <div className="w-full max-w-md">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-indigo-600 shadow-2xl mb-5">
-                        <Shield className="w-10 h-10 text-white" />
-                    </div>
-                    <h1 className="text-3xl font-extrabold text-white tracking-tight">Admin Access</h1>
-                    <p className="text-indigo-300 mt-2 text-sm">Restricted to authorized administrators only</p>
+        <div className="flex flex-col items-center justify-center py-12 sm:px-6 lg:px-8 min-h-[70vh]">
+            <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
+                    <Shield className="w-9 h-9 text-primary" />
                 </div>
+                <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                    Admin Access
+                </h2>
+                <p className="mt-2 text-base text-gray-500">
+                    Restricted to authorized administrators only.
+                </p>
+            </div>
 
-                {/* Card */}
-                <div className="bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl">
+            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md w-full">
+                <div className="bg-white py-10 px-6 shadow-xl sm:rounded-2xl border border-gray-100/50">
                     {error && (
-                        <div className="bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-xl text-sm mb-6 flex items-center gap-2">
+                        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-6 flex items-center gap-2">
                             <AlertCircle className="w-4 h-4 shrink-0" />
                             {error}
                         </div>
@@ -67,7 +61,7 @@ const AdminLogin = () => {
 
                     <form onSubmit={handleLogin} className="space-y-5">
                         <div>
-                            <label htmlFor="admin-email" className="block text-sm font-semibold text-slate-300 mb-1.5">
+                            <label htmlFor="admin-email" className="block text-sm font-medium text-gray-700 mb-1">
                                 Admin Email
                             </label>
                             <input
@@ -78,16 +72,16 @@ const AdminLogin = () => {
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
                                 placeholder="Admin@gmail.com"
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                className="appearance-none block w-full px-3 py-2.5 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="admin-password" className="block text-sm font-semibold text-slate-300 mb-1.5">
+                            <label htmlFor="admin-password" className="block text-sm font-medium text-gray-700 mb-1">
                                 Password
                             </label>
                             <div className="relative">
-                                <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                                <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                                 <input
                                     id="admin-password"
                                     type={showPassword ? 'text' : 'password'}
@@ -95,12 +89,12 @@ const AdminLogin = () => {
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-12 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                    className="appearance-none block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(v => !v)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
                                 >
                                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                 </button>
@@ -110,7 +104,7 @@ const AdminLogin = () => {
                         <button
                             type="submit"
                             disabled={loading || !email || !password}
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition shadow-lg flex items-center justify-center gap-2 mt-2"
+                            className="w-full flex justify-center items-center gap-2 py-4 px-4 rounded-xl shadow-custom text-sm font-bold text-white bg-primary hover:bg-primary-hover disabled:opacity-50 focus:outline-none transition mt-2"
                         >
                             {loading ? (
                                 <>
@@ -122,11 +116,16 @@ const AdminLogin = () => {
                             )}
                         </button>
                     </form>
-                </div>
 
-                <p className="text-center text-xs text-slate-600 mt-6">
-                    Unauthorized access attempts are monitored.
-                </p>
+                    <div className="mt-6 text-center">
+                        <Link
+                            to="/login"
+                            className="text-xs text-gray-400 hover:text-primary transition font-medium"
+                        >
+                            ← Back to Student Login
+                        </Link>
+                    </div>
+                </div>
             </div>
         </div>
     );

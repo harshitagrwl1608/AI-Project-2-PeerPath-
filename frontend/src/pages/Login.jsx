@@ -83,16 +83,6 @@ const Login = () => {
                     </p>
                 </div>
 
-                {/* Admin Login Toggle */}
-                <div className="mt-5 text-center">
-                    <Link
-                        to="/admin-login"
-                        className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-indigo-600 transition font-medium"
-                    >
-                        <Shield className="w-3.5 h-3.5" />
-                        Admin Login
-                    </Link>
-                </div>
             </div>
         </div>
     );

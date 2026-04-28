@@ -11,6 +11,8 @@ import MySessions from './pages/MySessions';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
 
+const ADMIN_EMAIL = 'Admin@gmail.com';
+
 // Simple PrivateRoute wrapper restricting access to logged-in users
 const PrivateRoute = ({ children, requireProfile = false }) => {
     const { currentUser, userProfile } = useAuth();
@@ -20,9 +22,12 @@ const PrivateRoute = ({ children, requireProfile = false }) => {
         return <Navigate to="/login" />;
     }
     
-    // 2. Profile required but missing -> Setup
-    // Only redirect to setup if we explicitly expect a profile and don't have one.
-    // Note: If userProfile is missing name, it's considered incomplete.
+    // 2. Admin bypasses profile setup entirely
+    if (currentUser.email === ADMIN_EMAIL) {
+        return children;
+    }
+    
+    // 3. Profile required but missing -> Setup
     if (requireProfile && !userProfile?.name) {
         return <Navigate to="/setup" />;
     }
