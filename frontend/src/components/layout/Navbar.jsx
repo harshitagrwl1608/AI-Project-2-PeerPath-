@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { BookOpen, User, Home, Monitor, Shield, Users } from 'lucide-react';
+import { BookOpen, User, Home, Monitor, Shield, Users, Lock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import ChangePasswordModal from '../ChangePasswordModal';
 
 const ADMIN_EMAIL = 'admin@gmail.com';
 
@@ -9,6 +10,7 @@ const Navbar = () => {
     const { currentUser, logout } = useAuth();
     const navigate = useNavigate();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [showChangePassword, setShowChangePassword] = useState(false);
 
     const handleLogout = async () => {
         try {
@@ -71,6 +73,16 @@ const Navbar = () => {
                                             <button
                                                 onClick={() => {
                                                     setIsDropdownOpen(false);
+                                                    setShowChangePassword(true);
+                                                }}
+                                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                            >
+                                                <Lock className="h-4 w-4 mr-2 text-gray-400" />
+                                                Change Password
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setIsDropdownOpen(false);
                                                     handleLogout();
                                                 }}
                                                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
@@ -94,6 +106,13 @@ const Navbar = () => {
                     </div>
                 </div>
             </div>
+            
+            {showChangePassword && currentUser?.email && (
+                <ChangePasswordModal 
+                    email={currentUser.email} 
+                    onClose={() => setShowChangePassword(false)} 
+                />
+            )}
         </nav>
     );
 };

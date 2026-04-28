@@ -1,5 +1,6 @@
 import express from 'express';
 import pool from '../db.js';
+import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
@@ -40,44 +41,82 @@ router.post('/', async (req, res) => {
         const {
             email, name, college, year, branch,
             skillsTeach, skillsLearn, showEmail,
-            requestsUsed, plan, rating, totalSessions
+            requestsUsed, plan, rating, totalSessions, password
         } = req.body;
 
         if (!email) {
             return res.status(400).json({ error: 'Email is required' });
         }
 
-        const query = `
-            INSERT INTO users (
-                email, name, college, year, branch, 
-                "skillsTeach", "skillsLearn", "showEmail", 
-                "requestsUsed", plan, rating, "totalSessions"
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-            ON CONFLICT (email) DO UPDATE SET
-                name = EXCLUDED.name,
-                college = EXCLUDED.college,
-                year = EXCLUDED.year,
-                branch = EXCLUDED.branch,
-                "skillsTeach" = EXCLUDED."skillsTeach",
-                "skillsLearn" = EXCLUDED."skillsLearn",
-                "showEmail" = EXCLUDED."showEmail",
-                "requestsUsed" = EXCLUDED."requestsUsed",
-                plan = EXCLUDED.plan,
-                rating = EXCLUDED.rating,
-                "totalSessions" = EXCLUDED."totalSessions"
-            RETURNING *;
-        `;
+        let query, values;
 
-        const values = [
-            email, name || null, college || null, year || null, branch || null,
-            JSON.stringify(skillsTeach || []), JSON.stringify(skillsLearn || []),
-            showEmail || false, requestsUsed || 0, plan || 'free', 
-            rating || null, totalSessions || 0
-        ];
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
+            query = `
+                INSERT INTO users (
+                    email, name, college, year, branch, 
+                    "skillsTeach", "skillsLearn", "showEmail", 
+                    "requestsUsed", plan, rating, "totalSessions", password
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                ON CONFLICT (email) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    college = EXCLUDED.college,
+                    year = EXCLUDED.year,
+                    branch = EXCLUDED.branch,
+                    "skillsTeach" = EXCLUDED."skillsTeach",
+                    "skillsLearn" = EXCLUDED."skillsLearn",
+                    "showEmail" = EXCLUDED."showEmail",
+                    "requestsUsed" = EXCLUDED."requestsUsed",
+                    plan = EXCLUDED.plan,
+                    rating = EXCLUDED.rating,
+                    "totalSessions" = EXCLUDED."totalSessions",
+                    password = COALESCE(EXCLUDED.password, users.password)
+                RETURNING *;
+            `;
+            values = [
+                email, name || null, college || null, year || null, branch || null,
+                JSON.stringify(skillsTeach || []), JSON.stringify(skillsLearn || []),
+                showEmail || false, requestsUsed || 0, plan || 'free', 
+                rating || null, totalSessions || 0, hashedPassword
+            ];
+        } else {
+            query = `
+                INSERT INTO users (
+                    email, name, college, year, branch, 
+                    "skillsTeach", "skillsLearn", "showEmail", 
+                    "requestsUsed", plan, rating, "totalSessions"
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                ON CONFLICT (email) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    college = EXCLUDED.college,
+                    year = EXCLUDED.year,
+                    branch = EXCLUDED.branch,
+                    "skillsTeach" = EXCLUDED."skillsTeach",
+                    "skillsLearn" = EXCLUDED."skillsLearn",
+                    "showEmail" = EXCLUDED."showEmail",
+                    "requestsUsed" = EXCLUDED."requestsUsed",
+                    plan = EXCLUDED.plan,
+                    rating = EXCLUDED.rating,
+                    "totalSessions" = EXCLUDED."totalSessions"
+                RETURNING *;
+            `;
+            values = [
+                email, name || null, college || null, year || null, branch || null,
+                JSON.stringify(skillsTeach || []), JSON.stringify(skillsLearn || []),
+                showEmail || false, requestsUsed || 0, plan || 'free', 
+                rating || null, totalSessions || 0
+            ];
+        }
 
         const result = await pool.query(query, values);
-        res.json(result.rows[0]);
+        
+        // Clean password before returning
+        const user = result.rows[0];
+        delete user.password;
+        res.json(user);
 
     } catch (err) {
         console.error('Error saving user profile:', err);

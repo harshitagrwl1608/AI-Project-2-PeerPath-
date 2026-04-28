@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     plan VARCHAR DEFAULT 'free',
     rating NUMERIC,
     "totalSessions" INTEGER DEFAULT 0,
+    password VARCHAR,
     "createdAt" TIMESTAMP DEFAULT NOW()
 );
 
@@ -38,4 +39,11 @@ CREATE TABLE IF NOT EXISTS reports (
     reason TEXT NOT NULL,
     status VARCHAR DEFAULT 'pending',
     "createdAt" TIMESTAMP DEFAULT NOW()
+);
+
+-- Auth OTPs Table
+CREATE TABLE IF NOT EXISTS auth_otps (
+    email VARCHAR PRIMARY KEY,
+    otp VARCHAR NOT NULL,
+    "expiresAt" TIMESTAMP NOT NULL
 );

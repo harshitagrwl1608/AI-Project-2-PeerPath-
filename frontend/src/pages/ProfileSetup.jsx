@@ -16,7 +16,9 @@ const ProfileSetup = () => {
         skillsTeach: userProfile?.skillsTeach || [], 
         skillsLearn: userProfile?.skillsLearn || [], 
         email: userProfile?.email || '', 
-        showEmail: userProfile?.showEmail || false
+        showEmail: userProfile?.showEmail || false,
+        password: '',
+        confirmPassword: ''
     });
     const [errors, setErrors] = useState({});
     const [saving, setSaving] = useState(false);
@@ -60,6 +62,14 @@ const ProfileSetup = () => {
         if (formData.showEmail && !formData.email.trim()) newErrors.email = 'Email is required if shown on profile.';
         if (formData.skillsTeach.length === 0) newErrors.skillsTeach = 'Please select at least one skill you can teach.';
         if (formData.skillsLearn.length === 0) newErrors.skillsLearn = 'Please select at least one skill you want to learn.';
+        
+        // Only require password if userProfile is null (new user)
+        if (!userProfile) {
+            if (!formData.password) newErrors.password = 'Password is required for new accounts.';
+            else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters.';
+            if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match.';
+        }
+        
         return newErrors;
     };
 
@@ -83,6 +93,7 @@ const ProfileSetup = () => {
             rating: userProfile?.rating || null,
             totalSessions: userProfile?.totalSessions || 0,
             createdAt: userProfile?.createdAt || new Date().toISOString(),
+            ...(formData.password ? { password: formData.password } : {})
         };
 
         console.log('Saving profile:', newProfile);
@@ -321,6 +332,42 @@ const ProfileSetup = () => {
                         </div>
                     </div>
                 </div>
+
+                {!userProfile && (
+                    <div className="border-t border-gray-100 pt-6">
+                        <h3 className="font-bold text-gray-900 mb-3">Account Security</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Create Password</label>
+                                <input
+                                    type="password"
+                                    className={`w-full px-4 py-2.5 rounded-xl border focus:ring-2 focus:ring-primary focus:border-transparent transition ${errors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                                    value={formData.password}
+                                    onChange={e => {
+                                        setFormData({ ...formData, password: e.target.value });
+                                        if (errors.password) setErrors(prev => ({ ...prev, password: '' }));
+                                    }}
+                                    placeholder="••••••••"
+                                />
+                                <FieldError field="password" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Confirm Password</label>
+                                <input
+                                    type="password"
+                                    className={`w-full px-4 py-2.5 rounded-xl border focus:ring-2 focus:ring-primary focus:border-transparent transition ${errors.confirmPassword ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                                    value={formData.confirmPassword}
+                                    onChange={e => {
+                                        setFormData({ ...formData, confirmPassword: e.target.value });
+                                        if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: '' }));
+                                    }}
+                                    placeholder="••••••••"
+                                />
+                                <FieldError field="confirmPassword" />
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <SkillSection 
                     type="skillsTeach" 
