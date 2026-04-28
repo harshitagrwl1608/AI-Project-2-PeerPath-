@@ -35,12 +35,6 @@ const Navbar = () => {
                                 {currentUser.email === ADMIN_EMAIL ? (
                                     // Admin navigation
                                     <>
-                                        <Link to="/admin?tab=users" className="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium flex items-center transition">
-                                            <Users className="h-4 w-4 mr-1" /> <span className="hidden sm:inline">Users</span>
-                                        </Link>
-                                        <Link to="/admin?tab=sessions" className="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium flex items-center transition">
-                                            <Monitor className="h-4 w-4 mr-1" /> <span className="hidden sm:inline">Sessions</span>
-                                        </Link>
                                         <Link to="/admin" className="text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-semibold flex items-center transition shadow-md">
                                             <Shield className="h-4 w-4 mr-1" /> <span className="hidden sm:inline">Admin</span>
                                         </Link>
