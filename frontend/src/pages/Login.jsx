@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { BookOpen } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { BookOpen, Shield } from 'lucide-react';
 
 const Login = () => {
     const { loginWithEmail } = useAuth();
@@ -82,9 +82,21 @@ const Login = () => {
                         By continuing, verify with your .edu domain for this demo.
                     </p>
                 </div>
+
+                {/* Admin Login Toggle */}
+                <div className="mt-5 text-center">
+                    <Link
+                        to="/admin-login"
+                        className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-indigo-600 transition font-medium"
+                    >
+                        <Shield className="w-3.5 h-3.5" />
+                        Admin Login
+                    </Link>
+                </div>
             </div>
         </div>
     );
 };
 
 export default Login;
+

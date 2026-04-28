@@ -75,14 +75,7 @@ const Navbar = () => {
                                     )}
                                 </div>
                             </>
-                        ) : (
-                            <Link
-                                to="/login"
-                                className="bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-primary-hover transition shadow-custom"
-                            >
-                                Login
-                            </Link>
-                        )}
+                        ) : null}
                     </div>
                 </div>
             </div>
