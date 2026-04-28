@@ -1,13 +1,13 @@
 import express from 'express';
 import pool from '../db.js';
+import crypto from 'crypto';
 
 const router = express.Router();
 
-// Helper to generate a deterministic-looking Google Meet link
+// Helper to generate a unique Jitsi Meet link
 const generateMeetLink = () => {
-    const chars = 'abcdefghijklmnopqrstuvwxyz';
-    const randomStr = (length) => Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-    return `https://meet.google.com/${randomStr(3)}-${randomStr(4)}-${randomStr(3)}`;
+    const randomHex = crypto.randomBytes(16).toString('hex');
+    return `https://meet.jit.si/PeerPath-${randomHex}`;
 };
 
 // GET /api/sessions - Get all sessions where the user is requester or target
