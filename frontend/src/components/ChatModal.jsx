@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, Calendar, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { addChatMessage, updateSession, updateMessageStatus, onSessionSnapshot } from '../services/sessionService';
 
-const ChatModal = ({ session, currentUser, onClose, onSessionUpdate }) => {
+const ChatModal = ({ session, currentUser, onClose, onSessionUpdate, onCompleteSession }) => {
     const [messages, setMessages] = useState(session?.messages || []);
     const [newMessage, setNewMessage] = useState('');
     const [showReschedule, setShowReschedule] = useState(false);
@@ -155,12 +155,22 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate }) => {
                         <h3 className="text-lg font-bold text-gray-900">Chat with {session.peerName}</h3>
                         <p className="text-xs text-gray-400 mt-0.5">Skill: {session.skill}</p>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 bg-white shadow-sm rounded-full p-2 hover:bg-gray-50 transition"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {onCompleteSession && (
+                            <button
+                                onClick={() => onCompleteSession(session)}
+                                className="flex items-center text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-1.5 rounded-xl hover:bg-emerald-100 transition shadow-sm"
+                            >
+                                <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Complete Session
+                            </button>
+                        )}
+                        <button
+                            onClick={onClose}
+                            className="text-gray-400 hover:text-gray-600 bg-white shadow-sm rounded-full p-2 hover:bg-gray-50 transition"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Messages Area — flex-1 so it fills space between header and footer */}

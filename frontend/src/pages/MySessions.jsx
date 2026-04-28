@@ -261,6 +261,20 @@ const MySessions = () => {
                     currentUser={currentUser} 
                     onClose={() => setActiveChatSession(null)} 
                     onSessionUpdate={handleSessionUpdate}
+                    onCompleteSession={async (sessionToComplete) => {
+                        setIsSubmitting(true);
+                        try {
+                            await updateSession(sessionToComplete.id, { status: 'completed' });
+                            setSessions(prev => prev.map(s => s.id === sessionToComplete.id ? { ...s, status: 'completed' } : s));
+                            setActiveChatSession(null);
+                            setRateSession({...sessionToComplete, status: 'completed'});
+                            showToast("Session completed! Please rate your peer.", "success");
+                        } catch (err) {
+                            showToast("Failed to complete session.", "error");
+                        } finally {
+                            setIsSubmitting(false);
+                        }
+                    }}
                 />
             )}
 
