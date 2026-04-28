@@ -109,23 +109,23 @@ const AdminDashboard = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
+        <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <div className="bg-slate-900/80 border-b border-white/10 backdrop-blur-md sticky top-0 z-10">
+            <div className="bg-white/80 border-b border-gray-200 backdrop-blur-md sticky top-0 z-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-indigo-600 rounded-xl shadow-lg">
-                            <Shield className="w-6 h-6 text-white" />
+                        <div className="p-2 bg-primary/10 rounded-xl shadow-sm">
+                            <Shield className="w-6 h-6 text-primary" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-white tracking-tight">PeerPath Admin</h1>
-                            <p className="text-xs text-indigo-300">Control Panel</p>
+                            <h1 className="text-xl font-extrabold text-gray-900 tracking-tight">PeerPath Admin</h1>
+                            <p className="text-xs font-medium text-gray-500">Control Panel</p>
                         </div>
                     </div>
                     <button
                         onClick={fetchData}
                         disabled={loading}
-                        className="flex items-center gap-2 text-sm text-indigo-300 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl border border-white/10 transition"
+                        className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-primary bg-white hover:bg-gray-50 px-4 py-2 rounded-xl border border-gray-200 shadow-sm transition"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                         Refresh
@@ -137,44 +137,44 @@ const AdminDashboard = () => {
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     {[
-                        { label: 'Total Users', value: stats.totalUsers, icon: <Users className="w-5 h-5" />, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
-                        { label: 'Total Sessions', value: stats.totalSessions, icon: <Activity className="w-5 h-5" />, color: 'text-indigo-400', bg: 'bg-indigo-500/10 border-indigo-500/20' },
-                        { label: 'Active Sessions', value: stats.activeSessions, icon: <Clock className="w-5 h-5" />, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
-                        { label: 'Completed', value: stats.completedSessions, icon: <CheckCircle2 className="w-5 h-5" />, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
+                        { label: 'Total Users', value: stats.totalUsers, icon: <Users className="w-5 h-5" />, color: 'text-blue-600', bg: 'bg-blue-50 border-blue-100' },
+                        { label: 'Total Sessions', value: stats.totalSessions, icon: <Activity className="w-5 h-5" />, color: 'text-primary', bg: 'bg-indigo-50 border-indigo-100' },
+                        { label: 'Active Sessions', value: stats.activeSessions, icon: <Clock className="w-5 h-5" />, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-100' },
+                        { label: 'Completed', value: stats.completedSessions, icon: <CheckCircle2 className="w-5 h-5" />, color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100' },
                     ].map(({ label, value, icon, color, bg }) => (
-                        <div key={label} className={`rounded-2xl border p-5 ${bg} backdrop-blur-sm`}>
+                        <div key={label} className={`rounded-2xl border p-5 ${bg} backdrop-blur-sm shadow-sm`}>
                             <div className={`${color} mb-3`}>{icon}</div>
-                            <p className="text-3xl font-bold text-white mb-1">{loading ? '—' : value}</p>
-                            <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{label}</p>
+                            <p className="text-3xl font-extrabold text-gray-900 mb-1">{loading ? '—' : value}</p>
+                            <p className="text-xs text-gray-600 font-semibold uppercase tracking-wider">{label}</p>
                         </div>
                     ))}
                 </div>
 
                 {/* Tabs + Search */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                    <div className="flex bg-white/5 rounded-xl p-1 border border-white/10">
+                    <div className="flex bg-gray-100 rounded-xl p-1 border border-gray-200">
                         <button
                             onClick={() => { setActiveTab('users'); setSearchQuery(''); }}
-                            className={`px-5 py-2 rounded-lg text-sm font-semibold transition ${activeTab === 'users' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                            className={`px-5 py-2 rounded-lg text-sm font-semibold transition ${activeTab === 'users' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                         >
                             <Users className="w-4 h-4 inline mr-2" />Users ({users.length})
                         </button>
                         <button
                             onClick={() => { setActiveTab('sessions'); setSearchQuery(''); }}
-                            className={`px-5 py-2 rounded-lg text-sm font-semibold transition ${activeTab === 'sessions' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                            className={`px-5 py-2 rounded-lg text-sm font-semibold transition ${activeTab === 'sessions' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                         >
                             <BookOpen className="w-4 h-4 inline mr-2" />Sessions ({sessions.length})
                         </button>
                     </div>
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                         <div className="relative flex-1 sm:w-64">
-                            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
                                 placeholder={activeTab === 'users' ? 'Search users...' : 'Search sessions...'}
-                                className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition shadow-sm"
                             />
                         </div>
                         {activeTab === 'sessions' && (
@@ -182,16 +182,16 @@ const AdminDashboard = () => {
                                 <select
                                     value={sessionFilter}
                                     onChange={e => setSessionFilter(e.target.value)}
-                                    className="appearance-none bg-white/5 border border-white/10 text-white text-sm px-4 py-2.5 pr-8 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="appearance-none bg-white border border-gray-200 text-gray-700 font-medium text-sm px-4 py-2.5 pr-8 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
                                 >
-                                    <option value="all" className="bg-slate-800">All Status</option>
-                                    <option value="pending" className="bg-slate-800">Pending</option>
-                                    <option value="confirmed" className="bg-slate-800">Confirmed</option>
-                                    <option value="completed" className="bg-slate-800">Completed</option>
-                                    <option value="rated" className="bg-slate-800">Rated</option>
-                                    <option value="declined" className="bg-slate-800">Declined</option>
+                                    <option value="all">All Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="rated">Rated</option>
+                                    <option value="declined">Declined</option>
                                 </select>
-                                <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                <ChevronDown className="w-4 h-4 text-gray-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                             </div>
                         )}
                     </div>
@@ -200,49 +200,49 @@ const AdminDashboard = () => {
                 {/* Content */}
                 {loading ? (
                     <div className="flex flex-col items-center justify-center h-64 gap-4">
-                        <div className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-                        <p className="text-slate-400 font-medium">Loading admin data...</p>
+                        <div className="w-12 h-12 border-4 border-indigo-100 border-t-primary rounded-full animate-spin" />
+                        <p className="text-gray-500 font-medium">Loading admin data...</p>
                     </div>
                 ) : activeTab === 'users' ? (
                     <div className="grid gap-3">
                         {filteredUsers.length === 0 ? (
-                            <div className="text-center py-16 text-slate-500">No users found</div>
+                            <div className="text-center py-16 text-gray-400 font-medium bg-white rounded-2xl border border-gray-200">No users found</div>
                         ) : filteredUsers.map(user => (
-                            <div key={user.email} className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/8 transition">
+                            <div key={user.email} className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-indigo-200 hover:shadow-md transition shadow-sm">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
+                                    <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-primary font-bold text-lg shrink-0">
                                         {(user.name || 'U').charAt(0)}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-white">{user.name || 'No Name'}</p>
-                                        <p className="text-xs text-indigo-300">{user.email}</p>
-                                        <p className="text-xs text-slate-500 mt-0.5">{user.college} · {user.year} · {user.branch}</p>
+                                        <p className="font-bold text-gray-900">{user.name || 'No Name'}</p>
+                                        <p className="text-xs font-medium text-primary">{user.email}</p>
+                                        <p className="text-xs text-gray-500 mt-0.5">{user.college} · {user.year} · {user.branch}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-6 flex-wrap">
                                     <div className="text-center">
-                                        <p className="text-white font-bold">{user.rating ? Number(user.rating).toFixed(1) : '—'}</p>
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">Rating</p>
+                                        <p className="text-gray-900 font-extrabold">{user.rating ? Number(user.rating).toFixed(1) : '—'}</p>
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Rating</p>
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-white font-bold">{user.totalSessions || 0}</p>
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">Sessions</p>
+                                        <p className="text-gray-900 font-extrabold">{user.totalSessions || 0}</p>
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Sessions</p>
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-white font-bold capitalize">{user.plan || 'free'}</p>
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">Plan</p>
+                                        <p className="text-gray-900 font-extrabold capitalize">{user.plan || 'free'}</p>
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Plan</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Teaches</p>
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Teaches</p>
                                         <div className="flex flex-wrap gap-1">
                                             {(user.skillsTeach || []).map(s => (
-                                                <span key={s} className="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full">{s}</span>
+                                                <span key={s} className="text-xs font-medium bg-indigo-50 text-primary border border-indigo-100 px-2.5 py-0.5 rounded-full">{s}</span>
                                             ))}
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => setConfirmRemove(user)}
-                                        className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 rounded-xl text-sm font-semibold transition"
+                                        className="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 rounded-xl text-sm font-semibold transition"
                                     >
                                         <UserX className="w-4 h-4" /> Remove
                                     </button>
@@ -253,38 +253,38 @@ const AdminDashboard = () => {
                 ) : (
                     <div className="grid gap-3">
                         {filteredSessions.length === 0 ? (
-                            <div className="text-center py-16 text-slate-500">No sessions found</div>
+                            <div className="text-center py-16 text-gray-400 font-medium bg-white rounded-2xl border border-gray-200">No sessions found</div>
                         ) : filteredSessions.map(session => {
                             const cfg = STATUS_CONFIG[session.status] || STATUS_CONFIG.pending;
                             return (
-                                <div key={session.id} className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/8 transition">
+                                <div key={session.id} className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-indigo-200 hover:shadow-md transition shadow-sm">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
-                                            <BookOpen className="w-5 h-5 text-indigo-400" />
+                                        <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-100">
+                                            <BookOpen className="w-5 h-5 text-primary" />
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <p className="font-bold text-white">
+                                                <p className="font-bold text-gray-900">
                                                     {session.requesterName || session.requesterEmail}
                                                 </p>
-                                                <span className="text-slate-500 text-sm">→</span>
-                                                <p className="font-bold text-indigo-300">
+                                                <span className="text-gray-400 text-sm">→</span>
+                                                <p className="font-bold text-primary">
                                                     {session.targetUserName || session.targetUserEmail}
                                                 </p>
                                             </div>
                                             <div className="flex items-center gap-3 mt-1 flex-wrap">
-                                                <span className="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full font-medium">
+                                                <span className="text-xs bg-gray-100 border border-gray-200 text-gray-700 px-2.5 py-0.5 rounded-full font-semibold">
                                                     {session.skill || 'Unknown Skill'}
                                                 </span>
                                                 {session.date && (
-                                                    <span className="text-xs text-slate-500">
+                                                    <span className="text-xs font-medium text-gray-500">
                                                         {new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                                         {session.time ? ` · ${session.time}` : ''}
                                                     </span>
                                                 )}
                                                 {session.rating && (
-                                                    <span className="text-xs text-amber-400 flex items-center gap-1">
-                                                        <Star className="w-3 h-3 fill-amber-400" /> {session.rating}/5
+                                                    <span className="text-xs font-bold text-amber-500 flex items-center gap-1">
+                                                        <Star className="w-3.5 h-3.5 fill-amber-500" /> {session.rating}/5
                                                     </span>
                                                 )}
                                             </div>
@@ -304,42 +304,42 @@ const AdminDashboard = () => {
 
             {/* Remove Confirmation Modal */}
             {confirmRemove && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-slate-900 border border-red-500/30 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white border border-red-100 rounded-2xl p-6 w-full max-w-md shadow-2xl">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-red-500/20 rounded-xl">
-                                <AlertTriangle className="w-6 h-6 text-red-400" />
+                            <div className="p-2 bg-red-50 rounded-xl border border-red-100">
+                                <AlertTriangle className="w-6 h-6 text-red-600" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-white">Remove User</h3>
-                                <p className="text-sm text-slate-400">This action cannot be undone.</p>
+                                <h3 className="text-lg font-bold text-gray-900">Remove User</h3>
+                                <p className="text-sm font-medium text-gray-500">This action cannot be undone.</p>
                             </div>
                         </div>
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-4">
-                            <p className="font-bold text-white">{confirmRemove.name}</p>
-                            <p className="text-sm text-indigo-300">{confirmRemove.email}</p>
+                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
+                            <p className="font-bold text-gray-900">{confirmRemove.name}</p>
+                            <p className="text-sm font-medium text-primary">{confirmRemove.email}</p>
                         </div>
-                        <p className="text-sm text-slate-400 mb-3">
-                            This will permanently delete this user and <span className="text-red-400 font-semibold">all their sessions</span> from the platform.
+                        <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                            This will permanently delete this user and <span className="text-red-600 font-bold">all their sessions</span> from the platform.
                         </p>
                         <textarea
                             value={removeReason}
                             onChange={e => setRemoveReason(e.target.value)}
                             placeholder="Reason for removal (optional)..."
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none mb-5"
+                            className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none mb-5 shadow-sm"
                             rows={3}
                         />
                         <div className="flex gap-3">
                             <button
                                 onClick={() => { setConfirmRemove(null); setRemoveReason(''); }}
-                                className="flex-1 px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 bg-white/5 hover:bg-white/10 border border-white/10 transition"
+                                className="flex-1 px-4 py-3 rounded-xl text-sm font-bold text-gray-600 bg-white hover:bg-gray-50 border border-gray-300 transition shadow-sm"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleRemoveUser}
                                 disabled={removing}
-                                className="flex-1 px-4 py-3 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition disabled:opacity-60 flex items-center justify-center gap-2"
+                                className="flex-1 px-4 py-3 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition disabled:opacity-60 flex items-center justify-center gap-2 shadow-custom"
                             >
                                 {removing ? (
                                     <><RefreshCw className="w-4 h-4 animate-spin" /> Removing...</>
