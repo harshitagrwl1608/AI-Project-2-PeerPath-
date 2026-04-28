@@ -11,10 +11,10 @@ import MySessions from './pages/MySessions';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
 
-const ADMIN_EMAIL = 'Admin@gmail.com';
+const ADMIN_EMAIL = 'admin@gmail.com';
 
-// Simple PrivateRoute wrapper restricting access to logged-in users
-const PrivateRoute = ({ children, requireProfile = false }) => {
+// Route for regular users only — admin gets redirected to /admin
+const PrivateRoute = ({ children, requireProfile = false, adminAllowed = false }) => {
     const { currentUser, userProfile } = useAuth();
     
     // 1. Not logged in -> Login
@@ -22,9 +22,9 @@ const PrivateRoute = ({ children, requireProfile = false }) => {
         return <Navigate to="/login" />;
     }
     
-    // 2. Admin bypasses profile setup entirely
-    if (currentUser.email === ADMIN_EMAIL) {
-        return children;
+    // 2. Admin: redirect to dashboard unless the route explicitly allows admin
+    if (currentUser.email === ADMIN_EMAIL && !adminAllowed) {
+        return <Navigate to="/admin" />;
     }
     
     // 3. Profile required but missing -> Setup
@@ -62,7 +62,7 @@ function App() {
                                 </PrivateRoute>
                             } />
                             <Route path="/admin" element={
-                                <PrivateRoute>
+                                <PrivateRoute adminAllowed={true}>
                                     <AdminDashboard />
                                 </PrivateRoute>
                             } />

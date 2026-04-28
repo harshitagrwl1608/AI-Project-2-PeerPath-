@@ -3,13 +3,13 @@ import pool from '../db.js';
 
 const router = express.Router();
 
-const ADMIN_EMAIL = 'Admin@gmail.com';
+const ADMIN_EMAIL = 'admin@gmail.com';
 const isAdmin = (req) => req.headers['x-user-email'] === ADMIN_EMAIL;
 
 // GET /api/users - Fetch all users (for discovery feed)
 router.get('/', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM users');
+        const result = await pool.query('SELECT * FROM users WHERE email != $1', [ADMIN_EMAIL]);
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching users:', err);

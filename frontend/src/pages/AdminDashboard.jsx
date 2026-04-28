@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../services/apiService';
 import {
     Shield, Users, BookOpen, Trash2, AlertTriangle,
@@ -8,7 +8,7 @@ import {
     RefreshCw, Activity, UserX
 } from 'lucide-react';
 
-const ADMIN_EMAIL = 'Admin@gmail.com';
+const ADMIN_EMAIL = 'admin@gmail.com';
 
 const STATUS_CONFIG = {
     pending:   { color: 'bg-amber-50 text-amber-700 border-amber-200',   icon: <Clock className="w-3 h-3 mr-1" />,         label: 'Pending' },
@@ -21,8 +21,10 @@ const STATUS_CONFIG = {
 const AdminDashboard = () => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
-    const [activeTab, setActiveTab] = useState('users');
+    const initialTab = searchParams.get('tab') === 'sessions' ? 'sessions' : 'users';
+    const [activeTab, setActiveTab] = useState(initialTab);
     const [users, setUsers] = useState([]);
     const [sessions, setSessions] = useState([]);
     const [loading, setLoading] = useState(true);

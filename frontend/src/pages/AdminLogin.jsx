@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Shield, Eye, EyeOff, AlertCircle, Lock, BookOpen } from 'lucide-react';
 
-const ADMIN_EMAIL = 'Admin@gmail.com';
+const ADMIN_EMAIL = 'admin@gmail.com';
 const ADMIN_PASSWORD = 'Admin123';
 
 const AdminLogin = () => {
@@ -71,7 +71,7 @@ const AdminLogin = () => {
                                 required
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
-                                placeholder="Admin@gmail.com"
+                                placeholder="admin@gmail.com"
                                 className="appearance-none block w-full px-3 py-2.5 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                             />
                         </div>
