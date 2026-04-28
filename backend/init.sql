@@ -29,3 +29,13 @@ CREATE TABLE IF NOT EXISTS sessions (
     messages JSONB DEFAULT '[]'::JSONB,
     "createdAt" TIMESTAMP DEFAULT NOW()
 );
+
+-- Reports Table
+CREATE TABLE IF NOT EXISTS reports (
+    id SERIAL PRIMARY KEY,
+    "reporterEmail" VARCHAR REFERENCES users(email),
+    "reportedEmail" VARCHAR REFERENCES users(email),
+    reason TEXT NOT NULL,
+    status VARCHAR DEFAULT 'pending',
+    "createdAt" TIMESTAMP DEFAULT NOW()
+);

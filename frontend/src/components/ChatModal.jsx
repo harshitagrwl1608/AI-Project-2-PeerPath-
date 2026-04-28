@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Calendar, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { X, Send, Calendar, AlertCircle, CheckCircle2, XCircle, Flag } from 'lucide-react';
 import { addChatMessage, updateSession, updateMessageStatus, onSessionSnapshot } from '../services/sessionService';
+import ReportModal from './ReportModal';
 
 const ChatModal = ({ session, currentUser, onClose, onSessionUpdate, onCompleteSession }) => {
     const [messages, setMessages] = useState(session?.messages || []);
@@ -8,6 +8,7 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate, onCompleteS
     const [showReschedule, setShowReschedule] = useState(false);
     const [newDate, setNewDate] = useState('');
     const [newTime, setNewTime] = useState('');
+    const [showReportModal, setShowReportModal] = useState(false);
     const messagesEndRef = useRef(null);
 
     // Auto-scroll to bottom when messages update
@@ -164,6 +165,13 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate, onCompleteS
                                 <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Complete Session
                             </button>
                         )}
+                        <button
+                            onClick={() => setShowReportModal(true)}
+                            className="text-red-400 hover:text-red-600 bg-white shadow-sm rounded-full p-2 hover:bg-red-50 transition"
+                            title="Report User"
+                        >
+                            <Flag className="w-5 h-5" />
+                        </button>
                         <button
                             onClick={onClose}
                             className="text-gray-400 hover:text-gray-600 bg-white shadow-sm rounded-full p-2 hover:bg-gray-50 transition"
@@ -337,6 +345,15 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate, onCompleteS
                 </div>
 
             </div>
+
+            {showReportModal && (
+                <ReportModal 
+                    reportedUserEmail={session.peerEmail}
+                    reportedUserName={session.peerName}
+                    onClose={() => setShowReportModal(false)}
+                    onSuccess={() => alert('Report submitted successfully.')}
+                />
+            )}
         </div>
     );
 };

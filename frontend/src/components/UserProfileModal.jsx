@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { X, Star, Calendar, Mail, BookOpen, User, MapPin } from 'lucide-react';
+import { X, Star, Calendar, Mail, BookOpen, User, MapPin, Flag } from 'lucide-react';
 import { getUserProfile } from '../services/userService';
+import ReportModal from './ReportModal';
 
 const UserProfileModal = ({ userId, defaultUserObj, onClose }) => {
     const [user, setUser] = useState(defaultUserObj || null);
     const [loading, setLoading] = useState(!defaultUserObj);
+    const [showReportModal, setShowReportModal] = useState(false);
 
     useEffect(() => {
         // If we only have an ID but no full object, fetch from DB
@@ -33,6 +35,17 @@ const UserProfileModal = ({ userId, defaultUserObj, onClose }) => {
                     >
                         <X className="w-5 h-5" />
                     </button>
+
+                    {user && !loading && (
+                        <button 
+                            onClick={() => setShowReportModal(true)}
+                            className="absolute top-4 left-4 text-red-500 hover:text-red-700 bg-white/50 backdrop-blur rounded-full p-2 hover:bg-white transition flex items-center gap-1.5 px-3"
+                            title="Report User"
+                        >
+                            <Flag className="w-4 h-4" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Report</span>
+                        </button>
+                    )}
                 </div>
 
                 {loading ? (
@@ -137,6 +150,18 @@ const UserProfileModal = ({ userId, defaultUserObj, onClose }) => {
                     </div>
                 )}
             </div>
+
+            {showReportModal && (
+                <ReportModal 
+                    reportedUserEmail={user?.email}
+                    reportedUserName={user?.name}
+                    onClose={() => setShowReportModal(false)}
+                    onSuccess={() => {
+                        // Optional: show a toast or success message
+                        alert('Report submitted successfully.');
+                    }}
+                />
+            )}
         </div>
     );
 };

@@ -5,7 +5,7 @@ import { api } from '../services/apiService';
 import {
     Shield, Users, BookOpen, Trash2, AlertTriangle,
     Search, ChevronDown, CheckCircle2, Clock, Star, X,
-    RefreshCw, Activity, UserX
+    RefreshCw, Activity, UserX, Flag, Trash2 as Trash, ShieldAlert
 } from 'lucide-react';
 
 const ADMIN_EMAIL = 'admin@gmail.com';
@@ -27,6 +27,7 @@ const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState(initialTab);
     const [users, setUsers] = useState([]);
     const [sessions, setSessions] = useState([]);
+    const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [confirmRemove, setConfirmRemove] = useState(null);
@@ -44,12 +45,14 @@ const AdminDashboard = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [usersData, sessionsData] = await Promise.all([
+            const [usersData, sessionsData, reportsData] = await Promise.all([
                 api.get('/api/users'),
                 api.get('/api/sessions/all'),
+                api.get('/api/reports'),
             ]);
             setUsers(usersData);
             setSessions(sessionsData);
+            setReports(reportsData);
         } catch (err) {
             console.error('Admin fetch error:', err);
         } finally {
@@ -71,12 +74,23 @@ const AdminDashboard = () => {
                 s.requesterEmail !== confirmRemove.email &&
                 s.targetUserEmail !== confirmRemove.email
             ));
+            // Also refresh reports if any
+            setReports(prev => prev.filter(r => r.reportedEmail !== confirmRemove.email));
             setConfirmRemove(null);
             setRemoveReason('');
         } catch (err) {
             console.error('Remove user error:', err);
         } finally {
             setRemoving(false);
+        }
+    };
+
+    const handleDismissReport = async (reportId) => {
+        try {
+            await api.delete(`/api/reports/${reportId}`);
+            setReports(prev => prev.filter(r => r.id !== reportId));
+        } catch (err) {
+            console.error('Dismiss report error:', err);
         }
     };
 
@@ -165,6 +179,12 @@ const AdminDashboard = () => {
                         >
                             <BookOpen className="w-4 h-4 inline mr-2" />Sessions ({sessions.length})
                         </button>
+                        <button
+                            onClick={() => { setActiveTab('reports'); setSearchQuery(''); }}
+                            className={`px-5 py-2 rounded-lg text-sm font-semibold transition ${activeTab === 'reports' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            <Flag className="w-4 h-4 inline mr-2" />Reports ({reports.length})
+                        </button>
                     </div>
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                         <div className="relative flex-1 sm:w-64">
@@ -250,7 +270,7 @@ const AdminDashboard = () => {
                             </div>
                         ))}
                     </div>
-                ) : (
+                ) : activeTab === 'sessions' ? (
                     <div className="grid gap-3">
                         {filteredSessions.length === 0 ? (
                             <div className="text-center py-16 text-gray-400 font-medium bg-white rounded-2xl border border-gray-200">No sessions found</div>
@@ -298,6 +318,58 @@ const AdminDashboard = () => {
                                 </div>
                             );
                         })}
+                    </div>
+                ) : (
+                    <div className="grid gap-4">
+                        {reports.length === 0 ? (
+                            <div className="text-center py-16 text-gray-400 font-medium bg-white rounded-2xl border border-gray-200">No reports to review</div>
+                        ) : reports.map(report => (
+                            <div key={report.id} className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-red-200 hover:shadow-md transition shadow-sm">
+                                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
+                                    <div className="flex items-start gap-4">
+                                        <div className="p-3 rounded-xl bg-red-50 border border-red-100 shrink-0">
+                                            <ShieldAlert className="w-6 h-6 text-red-600" />
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Reporter:</span>
+                                                <span className="text-sm font-bold text-gray-900">{report.reporterName || report.reporterEmail}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 flex-wrap mb-2">
+                                                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Reported:</span>
+                                                <span className="text-sm font-bold text-red-600">{report.reportedName || report.reportedEmail}</span>
+                                            </div>
+                                            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mt-2">
+                                                <p className="text-sm text-gray-700 leading-relaxed italic">"{report.reason}"</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Submitted On</p>
+                                        <p className="text-sm font-medium text-gray-900">
+                                            {new Date(report.createdAt).toLocaleDateString('en-US', { 
+                                                month: 'short', day: 'numeric', year: 'numeric',
+                                                hour: '2-digit', minute: '2-digit'
+                                            })}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                                    <button
+                                        onClick={() => handleDismissReport(report.id)}
+                                        className="px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-50 rounded-xl border border-gray-200 transition"
+                                    >
+                                        Dismiss Report
+                                    </button>
+                                    <button
+                                        onClick={() => setConfirmRemove({ email: report.reportedEmail, name: report.reportedName })}
+                                        className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition flex items-center gap-2 shadow-sm"
+                                    >
+                                        <UserX className="w-4 h-4" /> Take Action (Remove User)
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 )}
             </div>
