@@ -18,10 +18,18 @@ router.get('/', async (req, res) => {
             return res.status(401).json({ error: 'Unauthorized: No email provided' });
         }
 
-        const result = await pool.query(
-            'SELECT * FROM sessions WHERE "requesterEmail" = $1 OR "targetUserEmail" = $1 ORDER BY "createdAt" DESC',
-            [email]
-        );
+        const query = `
+            SELECT 
+                s.*,
+                u_req.name AS "requesterName",
+                u_target.name AS "targetUserName"
+            FROM sessions s
+            LEFT JOIN users u_req ON s."requesterEmail" = u_req.email
+            LEFT JOIN users u_target ON s."targetUserEmail" = u_target.email
+            WHERE s."requesterEmail" = $1 OR s."targetUserEmail" = $1
+            ORDER BY s."createdAt" DESC
+        `;
+        const result = await pool.query(query, [email]);
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching sessions:', err);

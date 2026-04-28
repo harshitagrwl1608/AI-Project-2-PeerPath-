@@ -25,37 +25,28 @@ const MySessions = () => {
     const [activeChatSession, setActiveChatSession] = useState(null);
 
     useEffect(() => {
-        const fetchSessions = async () => {
-            setLoading(true);
-            const data = await getSessions(currentUser?.email || null);
-            setSessions(data);
-            setLoading(false);
-        };
-        fetchSessions();
-    }, [currentUser]);
-
-    // Resolve peer name from the sessions data by fetching user profiles
-    const [peerNames, setPeerNames] = useState({});
-    useEffect(() => {
-        const resolvePeerNames = async () => {
-            const names = {};
-            for (const session of sessions) {
-                const isReq = session.requesterEmail === currentUser?.email;
-                const peerEmail = isReq ? session.targetUserEmail : session.requesterEmail;
-                if (peerEmail && !names[peerEmail]) {
-                    try {
-                        const { getUserProfile } = await import('../services/userService');
-                        const profile = await getUserProfile(peerEmail);
-                        names[peerEmail] = profile?.name || peerEmail;
-                    } catch {
-                        names[peerEmail] = peerEmail;
-                    }
+        let isMounted = true;
+        const fetchSessions = async (showLoading = true) => {
+            if (showLoading) setLoading(true);
+            try {
+                const data = await getSessions(currentUser?.email || null);
+                if (isMounted) {
+                    setSessions(data);
                 }
+            } finally {
+                if (isMounted) setLoading(false);
             }
-            setPeerNames(names);
         };
-        if (sessions.length > 0 && currentUser) resolvePeerNames();
-    }, [sessions, currentUser]);
+
+        if (currentUser) {
+            fetchSessions(true);
+            const intervalId = setInterval(() => fetchSessions(false), 5000);
+            return () => {
+                isMounted = false;
+                clearInterval(intervalId);
+            };
+        }
+    }, [currentUser]);
 
 
     const handleConfirmRetract = async () => {
@@ -147,7 +138,8 @@ const MySessions = () => {
                             const isRequester = session.requesterEmail === currentUser?.email;
                             const peerEmail = isRequester ? session.targetUserEmail : session.requesterEmail;
                             const displayType = isRequester ? 'Learning' : 'Teaching';
-                            const peerName = peerNames[peerEmail] || peerEmail || 'Peer';
+                            const dbPeerName = isRequester ? session.targetUserName : session.requesterName;
+                            const peerName = dbPeerName || peerEmail || 'Peer';
 
                             // FIX: date/time may be null — display TBD
                             const displayDate = session.date ? new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD';
