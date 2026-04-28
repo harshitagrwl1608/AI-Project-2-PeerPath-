@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { BookOpen, User, Home, Monitor, Shield } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const ADMIN_EMAIL = 'harshitagrwl1608@gmail.com';
+const ADMIN_EMAIL = 'Admin@gmail.com';
 
 const Navbar = () => {
     const { currentUser, logout } = useAuth();

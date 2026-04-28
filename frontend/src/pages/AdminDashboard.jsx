@@ -8,7 +8,7 @@ import {
     RefreshCw, Activity, UserX
 } from 'lucide-react';
 
-const ADMIN_EMAIL = 'harshitagrwl1608@gmail.com';
+const ADMIN_EMAIL = 'Admin@gmail.com';
 
 const STATUS_CONFIG = {
     pending:   { color: 'bg-amber-50 text-amber-700 border-amber-200',   icon: <Clock className="w-3 h-3 mr-1" />,         label: 'Pending' },

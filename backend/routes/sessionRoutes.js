@@ -4,7 +4,7 @@ import crypto from 'crypto';
 
 const router = express.Router();
 
-const ADMIN_EMAIL = 'harshitagrwl1608@gmail.com';
+const ADMIN_EMAIL = 'Admin@gmail.com';
 
 const isAdmin = (req) => req.headers['x-user-email'] === ADMIN_EMAIL;
 
