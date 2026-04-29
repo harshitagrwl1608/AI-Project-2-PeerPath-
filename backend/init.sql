@@ -48,3 +48,14 @@ CREATE TABLE IF NOT EXISTS auth_otps (
     otp VARCHAR NOT NULL,
     "expiresAt" TIMESTAMP NOT NULL
 );
+
+-- Real-Time Notifications tracking table
+CREATE TABLE IF NOT EXISTS notifications (
+    id SERIAL PRIMARY KEY,
+    "userEmail" VARCHAR NOT NULL,
+    type VARCHAR NOT NULL, -- 'request', 'status_update', 'upcoming'
+    title VARCHAR NOT NULL,
+    message TEXT,
+    "isRead" BOOLEAN DEFAULT FALSE,
+    "createdAt" TIMESTAMP DEFAULT NOW()
+);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, AlertCircle, Loader2, Search, X, Star, Clock, Plus, Trash2 } from 'lucide-react';
+import { BookOpen, AlertCircle, Loader2, Search, X, Star, Clock, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { saveUserProfile } from '../services/userService';
 import { SKILLS_OPTIONS } from '../data/mockData';
@@ -25,6 +25,8 @@ const ProfileSetup = () => {
     });
     const [errors, setErrors] = useState({});
     const [saving, setSaving] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     useEffect(() => {
         // If we later load userProfile from DB, update the form
@@ -475,30 +477,48 @@ const ProfileSetup = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Create Password</label>
-                                <input
-                                    type="password"
-                                    className={`w-full px-4 py-2.5 rounded-xl border focus:ring-2 focus:ring-primary focus:border-transparent transition ${errors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
-                                    value={formData.password}
-                                    onChange={e => {
-                                        setFormData({ ...formData, password: e.target.value });
-                                        if (errors.password) setErrors(prev => ({ ...prev, password: '' }));
-                                    }}
-                                    placeholder="••••••••"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        className={`w-full px-4 py-2.5 rounded-xl border focus:ring-2 focus:ring-primary focus:border-transparent transition pr-10 ${errors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                                        value={formData.password}
+                                        onChange={e => {
+                                            setFormData({ ...formData, password: e.target.value });
+                                            if (errors.password) setErrors(prev => ({ ...prev, password: '' }));
+                                        }}
+                                        placeholder="••••••••"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
                                 <FieldError field="password" />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Confirm Password</label>
-                                <input
-                                    type="password"
-                                    className={`w-full px-4 py-2.5 rounded-xl border focus:ring-2 focus:ring-primary focus:border-transparent transition ${errors.confirmPassword ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
-                                    value={formData.confirmPassword}
-                                    onChange={e => {
-                                        setFormData({ ...formData, confirmPassword: e.target.value });
-                                        if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: '' }));
-                                    }}
-                                    placeholder="••••••••"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        className={`w-full px-4 py-2.5 rounded-xl border focus:ring-2 focus:ring-primary focus:border-transparent transition pr-10 ${errors.confirmPassword ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                                        value={formData.confirmPassword}
+                                        onChange={e => {
+                                            setFormData({ ...formData, confirmPassword: e.target.value });
+                                            if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: '' }));
+                                        }}
+                                        placeholder="••••••••"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
                                 <FieldError field="confirmPassword" />
                             </div>
                         </div>

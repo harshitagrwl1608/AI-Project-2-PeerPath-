@@ -111,6 +111,17 @@ router.post('/', async (req, res) => {
         ];
 
         const result = await pool.query(query, values);
+        
+        // Notify target user
+        try {
+            await pool.query(`
+                INSERT INTO notifications ("userEmail", type, title, message)
+                VALUES ($1, 'request', 'New Session Request', $2)
+            `, [targetUserEmail, `You received a new request for a ${skill || 'mentoring'} session!`]);
+        } catch (notifErr) {
+            console.error('Failed to create notification:', notifErr);
+        }
+
         res.status(201).json(result.rows[0]);
 
     } catch (err) {
@@ -154,6 +165,25 @@ router.patch('/:id', async (req, res) => {
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Session not found' });
+        }
+
+        const session = result.rows[0];
+
+        // Notify requester on status change
+        try {
+            if (status === 'confirmed') {
+                await pool.query(`
+                    INSERT INTO notifications ("userEmail", type, title, message)
+                    VALUES ($1, 'status_update', 'Session Accepted!', $2)
+                `, [session.requesterEmail, `Your request for a ${session.skill} session was accepted.`]);
+            } else if (status === 'declined') {
+                await pool.query(`
+                    INSERT INTO notifications ("userEmail", type, title, message)
+                    VALUES ($1, 'status_update', 'Session Declined', $2)
+                `, [session.requesterEmail, `Your request for a ${session.skill} session was declined.`]);
+            }
+        } catch (notifErr) {
+            console.error('Failed to create status notification:', notifErr);
         }
 
         // If rating a session, update peer's profile
@@ -214,10 +244,29 @@ router.patch('/:id/messages/:msgIndex', async (req, res) => {
 // DELETE /api/sessions/:id - Delete a session
 router.delete('/:id', async (req, res) => {
     try {
-        const result = await pool.query('DELETE FROM sessions WHERE id = $1 RETURNING *', [req.params.id]);
-        if (result.rows.length === 0) {
+        const callerEmail = req.headers['x-user-email'];
+        
+        // First get the session to know who is deleting it
+        const sessionRes = await pool.query('SELECT * FROM sessions WHERE id = $1', [req.params.id]);
+        if (sessionRes.rows.length === 0) {
             return res.status(404).json({ error: 'Session not found' });
         }
+        const session = sessionRes.rows[0];
+
+        const result = await pool.query('DELETE FROM sessions WHERE id = $1 RETURNING *', [req.params.id]);
+        
+        // If the target user deletes the session (which means they declined it)
+        if (session.status === 'pending' && session.targetUserEmail === callerEmail) {
+            try {
+                await pool.query(`
+                    INSERT INTO notifications ("userEmail", type, title, message)
+                    VALUES ($1, 'status_update', 'Session Declined', $2)
+                `, [session.requesterEmail, `Your request for a ${session.skill} session was declined.`]);
+            } catch (notifErr) {
+                console.error('Failed to create decline notification:', notifErr);
+            }
+        }
+
         res.json({ message: 'Session deleted' });
     } catch (err) {
         console.error('Error deleting session:', err);

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, AlertCircle, ArrowLeft, X, Mail } from 'lucide-react';
+import { BookOpen, AlertCircle, ArrowLeft, X, Mail, Eye, EyeOff } from 'lucide-react';
 import { api } from '../services/apiService';
 
 const Login = () => {
@@ -19,6 +19,7 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState('');
     const [previewUrl, setPreviewUrl] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -96,11 +97,21 @@ const Login = () => {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Password</label>
-                        <input
-                            type="password" required value={password} onChange={e => setPassword(e.target.value)}
-                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
-                            placeholder="••••••••"
-                        />
+                        <div className="relative mt-1">
+                            <input
+                                type={showPassword ? 'text' : 'password'} 
+                                required value={password} onChange={e => setPassword(e.target.value)}
+                                className="block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-primary focus:border-primary sm:text-sm pr-10"
+                                placeholder="••••••••"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                            >
+                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
+                        </div>
                     </div>
                     <div className="flex items-center justify-end">
                         <button type="button" onClick={() => { setMode('forgot_email'); setError(''); setMsg(''); }} className="text-sm font-bold text-primary hover:text-primary-hover">
