@@ -19,6 +19,7 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState('');
     const [previewUrl, setPreviewUrl] = useState('');
+    const [mockOtp, setMockOtp] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = async (e) => {
@@ -55,10 +56,13 @@ const Login = () => {
             const res = await api.post('/api/auth/request-otp', { email });
             
             if (res.otp) {
-                setMsg(`Test OTP: ${res.otp} (Mock mode)`);
+                setMsg('Test OTP sent! Check the popup on the right.');
+                setMockOtp(res.otp);
+                setPreviewUrl('');
             } else if (res.previewUrl) {
                 setMsg('Test OTP sent! Check the popup on the right.');
                 setPreviewUrl(res.previewUrl);
+                setMockOtp('');
             } else {
                 setMsg('OTP sent to your email.');
             }
@@ -239,7 +243,7 @@ const Login = () => {
             </div>
 
             {/* Floating OTP Link for Prototype */}
-            {previewUrl && (
+            {(previewUrl || mockOtp) && (
                 <div className="fixed bottom-8 right-8 max-w-sm bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-5 border border-indigo-100 z-50">
                     <div className="flex items-start gap-4">
                         <div className="bg-indigo-50 p-2.5 rounded-xl shrink-0">
@@ -248,21 +252,26 @@ const Login = () => {
                         <div className="flex-1">
                             <h4 className="text-sm font-bold text-gray-900 mb-1">Test OTP Email Caught</h4>
                             <p className="text-xs text-gray-600 mb-3 leading-relaxed">
-                                Since this is a prototype, the email wasn't actually sent. Click below to view the test email and get your OTP.
+                                (Since this is a prototype, we caught the email for you!)
                             </p>
-                            <a 
-                                href={previewUrl} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="inline-flex items-center justify-center bg-primary text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm hover:bg-primary-hover transition"
-                            >
-                                Open Test Email
-                            </a>
+                            
+                            {mockOtp ? (
+                                <div className="text-center py-3 bg-gray-50 rounded-xl border border-gray-200 border-dashed">
+                                    <span className="text-xs text-gray-500 uppercase font-bold tracking-wider block mb-1">Your Code</span>
+                                    <span className="text-2xl font-black text-indigo-600 tracking-[0.2em]">{mockOtp}</span>
+                                </div>
+                            ) : (
+                                <a 
+                                    href={previewUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center justify-center w-full py-2 px-4 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition"
+                                >
+                                    Open Email Details &rarr;
+                                </a>
+                            )}
                         </div>
-                        <button 
-                            onClick={() => setPreviewUrl('')} 
-                            className="text-gray-400 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 p-1.5 rounded-lg transition shrink-0"
-                        >
+                        <button onClick={() => { setPreviewUrl(''); setMockOtp(''); }} className="shrink-0 text-gray-400 hover:text-gray-600">
                             <X className="w-4 h-4" />
                         </button>
                     </div>
