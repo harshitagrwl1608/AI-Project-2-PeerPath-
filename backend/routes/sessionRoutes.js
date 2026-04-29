@@ -1,6 +1,13 @@
 import express from 'express';
 import pool from '../db.js';
 import crypto from 'crypto';
+import multer from 'multer';
+
+// Set up multer for memory storage
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 20 * 1024 * 1024 } // 20MB limit
+});
 
 const router = express.Router();
 
@@ -208,6 +215,12 @@ router.patch('/:id', async (req, res) => {
             }
         }
 
+        // If session is completed or rated, delete media and clear messages to save storage
+        if (status === 'completed' || status === 'rated') {
+            await pool.query('DELETE FROM session_media WHERE "sessionId" = $1', [id]);
+            await pool.query('UPDATE sessions SET messages = $1::jsonb WHERE id = $2', ['[]', id]);
+        }
+
         res.json(result.rows[0]);
     } catch (err) {
         console.error('Error updating session:', err);
@@ -302,6 +315,56 @@ router.post('/:id/messages', async (req, res) => {
         res.status(201).json(newMessage);
     } catch (err) {
         console.error('Error adding session message:', err);
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
+// POST /api/sessions/:id/media - Upload media to a session
+router.post('/:id/media', upload.single('file'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const senderEmail = req.headers['x-user-email'];
+        const file = req.file;
+
+        if (!file) return res.status(400).json({ error: 'No file uploaded' });
+        if (!senderEmail) return res.status(401).json({ error: 'Unauthorized' });
+
+        // Insert into session_media table
+        const result = await pool.query(`
+            INSERT INTO session_media ("sessionId", "senderEmail", filename, mimetype, size, data)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id, filename, mimetype, size, "uploadedAt"
+        `, [id, senderEmail, file.originalname, file.mimetype, file.size, file.buffer]);
+
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error('Error uploading media:', err);
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
+// GET /api/sessions/:id/media/:mediaId - Download/View media
+router.get('/:id/media/:mediaId', async (req, res) => {
+    try {
+        const { mediaId } = req.params;
+
+        const result = await pool.query(`
+            SELECT filename, mimetype, data 
+            FROM session_media 
+            WHERE id = $1
+        `, [mediaId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Media not found' });
+        }
+
+        const media = result.rows[0];
+
+        res.setHeader('Content-Type', media.mimetype);
+        res.setHeader('Content-Disposition', `inline; filename="${media.filename}"`);
+        res.send(media.data);
+    } catch (err) {
+        console.error('Error retrieving media:', err);
         res.status(500).json({ error: 'Server Error' });
     }
 });

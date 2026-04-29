@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Calendar, AlertCircle, CheckCircle2, XCircle, Flag, Loader2 } from 'lucide-react';
+import { X, Send, Calendar, AlertCircle, CheckCircle2, XCircle, Flag, Loader2, Plus, Image as ImageIcon, FileText, Download } from 'lucide-react';
 import { addChatMessage, updateSession, updateMessageStatus, onSessionSnapshot } from '../services/sessionService';
 import { getUserProfile } from '../services/userService';
+import { api } from '../services/apiService';
 import ReportModal from './ReportModal';
 
 const ChatModal = ({ session, currentUser, onClose, onSessionUpdate, onCompleteSession }) => {
@@ -14,7 +15,9 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate, onCompleteS
     const [peerProfile, setPeerProfile] = useState(null);
     const [availableDates, setAvailableDates] = useState([]);
     const [availableTimes, setAvailableTimes] = useState([]);
+    const [isUploading, setIsUploading] = useState(false);
     const messagesEndRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     // Auto-scroll to bottom when messages update
     useEffect(() => {
@@ -93,6 +96,45 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate, onCompleteS
         setMessages(prev => [...prev, { ...msgObj, timestamp: new Date().toISOString() }]);
         setNewMessage('');
         await addChatMessage(session.id, msgObj);
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Reset input value so same file can be selected again
+        e.target.value = '';
+
+        if (file.size > 20 * 1024 * 1024) {
+            alert('File must be smaller than 20MB');
+            return;
+        }
+
+        try {
+            setIsUploading(true);
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const result = await api.upload(`/api/sessions/${session.id}/media`, formData);
+
+            const msgObj = {
+                type: 'media',
+                mediaId: result.id,
+                filename: result.filename,
+                mimetype: result.mimetype,
+                size: result.size,
+                senderId: currentUser?.email || 'demo-user',
+                senderName: currentUser?.displayName || 'Me'
+            };
+
+            setMessages(prev => [...prev, { ...msgObj, timestamp: new Date().toISOString() }]);
+            await addChatMessage(session.id, msgObj);
+        } catch (err) {
+            console.error('File upload failed:', err);
+            alert('Failed to upload file. Please try again.');
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     const handleProposeReschedule = async (e) => {
@@ -302,6 +344,44 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate, onCompleteS
                                 );
                             }
 
+                            if (msg.type === 'media') {
+                                const isImage = msg.mimetype?.startsWith('image/');
+                                const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+                                const downloadUrl = `${BASE_URL}/api/sessions/${session.id}/media/${msg.mediaId}`;
+                                
+                                return (
+                                    <div key={idx} className={`max-w-[70%] ${isMe ? 'ml-auto' : 'mr-auto'}`}>
+                                        <a
+                                            href={downloadUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={`block p-3 rounded-2xl border transition group hover:shadow-md ${
+                                                isMe 
+                                                    ? 'bg-primary text-white border-primary-hover rounded-br-none' 
+                                                    : 'bg-white border-gray-200 text-gray-800 rounded-bl-none'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className={`p-2 rounded-xl shrink-0 ${isMe ? 'bg-white/20' : 'bg-gray-100'}`}>
+                                                    {isImage ? <ImageIcon className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-bold truncate" title={msg.filename}>
+                                                        {msg.filename}
+                                                    </p>
+                                                    <p className={`text-xs mt-0.5 uppercase tracking-wider ${isMe ? 'text-indigo-100' : 'text-gray-500'}`}>
+                                                        {(msg.size / 1024 / 1024).toFixed(2)} MB
+                                                    </p>
+                                                </div>
+                                                <div className={`shrink-0 opacity-70 group-hover:opacity-100 transition ${isMe ? 'text-white' : 'text-primary'}`}>
+                                                    <Download className="w-4 h-4" />
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                );
+                            }
+
                             // Plain text message
                             return (
                                 <div key={idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
@@ -410,6 +490,24 @@ const ChatModal = ({ session, currentUser, onClose, onSessionUpdate, onCompleteS
                         >
                             <Calendar className="w-5 h-5" />
                         </button>
+                        
+                        <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            onChange={handleFileUpload} 
+                            className="hidden" 
+                            accept="image/*,.pdf"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="flex-shrink-0 p-2.5 rounded-xl border bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-primary transition disabled:opacity-50"
+                            title="Share Media (PDF/Images)"
+                        >
+                            {isUploading ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <Plus className="w-5 h-5" />}
+                        </button>
+
                         <input
                             type="text"
                             className="flex-1 min-w-0 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent shadow-sm text-sm"

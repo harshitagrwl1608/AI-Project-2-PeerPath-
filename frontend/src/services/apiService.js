@@ -19,8 +19,10 @@ const getAuthEmail = () => {
 export const apiRequest = async (path, options = {}) => {
     const email = getAuthEmail();
 
+    const isFormData = options.body instanceof FormData;
+    
     const headers = {
-        'Content-Type': 'application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...(email ? { 'X-User-Email': email } : {}),
         ...(options.headers || {}),
     };
@@ -41,6 +43,7 @@ export const apiRequest = async (path, options = {}) => {
 export const api = {
     get: (path) => apiRequest(path, { method: 'GET' }),
     post: (path, body) => apiRequest(path, { method: 'POST', body: JSON.stringify(body) }),
+    upload: (path, formData) => apiRequest(path, { method: 'POST', body: formData }),
     patch: (path, body) => apiRequest(path, { method: 'PATCH', body: JSON.stringify(body) }),
     delete: (path) => apiRequest(path, { method: 'DELETE' }),
 };

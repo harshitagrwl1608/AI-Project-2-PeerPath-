@@ -59,3 +59,15 @@ CREATE TABLE IF NOT EXISTS notifications (
     "isRead" BOOLEAN DEFAULT FALSE,
     "createdAt" TIMESTAMP DEFAULT NOW()
 );
+
+-- Session Media Table for Chat Sharing
+CREATE TABLE IF NOT EXISTS session_media (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "sessionId" UUID REFERENCES sessions(id) ON DELETE CASCADE,
+    "senderEmail" VARCHAR REFERENCES users(email),
+    filename VARCHAR NOT NULL,
+    mimetype VARCHAR NOT NULL,
+    size INTEGER NOT NULL,
+    data BYTEA NOT NULL,
+    "uploadedAt" TIMESTAMP DEFAULT NOW()
+);
