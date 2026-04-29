@@ -53,8 +53,16 @@ const Login = () => {
         try {
             setLoading(true);
             const res = await api.post('/api/auth/request-otp', { email });
-            setMsg(res.previewUrl ? 'Test OTP sent! Check the popup on the right.' : 'OTP sent to your email.');
-            setPreviewUrl(res.previewUrl || '');
+            
+            if (res.otp) {
+                setMsg(`Test OTP: ${res.otp} (Mock mode)`);
+            } else if (res.previewUrl) {
+                setMsg('Test OTP sent! Check the popup on the right.');
+                setPreviewUrl(res.previewUrl);
+            } else {
+                setMsg('OTP sent to your email.');
+            }
+            
             setMode(nextMode);
         } catch (err) {
             setError(err.message || 'Failed to send OTP.');

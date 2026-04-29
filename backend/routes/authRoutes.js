@@ -23,18 +23,14 @@ const getTransporter = async () => {
         });
         console.log("Using real SMTP server");
     } else {
-        // Fallback to Ethereal
-        let testAccount = await nodemailer.createTestAccount();
-        transporter = nodemailer.createTransport({
-            host: testAccount.smtp.host,
-            port: testAccount.smtp.port,
-            secure: testAccount.smtp.secure,
-            auth: {
-                user: testAccount.user,
-                pass: testAccount.pass,
-            },
-        });
-        console.log("Using Ethereal for testing. Provide SMTP_USER in .env for real emails.");
+        // Fallback: mock transporter to prevent Ethereal hanging on Render
+        transporter = {
+            sendMail: async (mailOptions) => {
+                console.log(`[Mock Email Sent] To: ${mailOptions.to}, Subject: ${mailOptions.subject}`);
+                return { mock: true };
+            }
+        };
+        console.log("Using Mock Transporter for testing. Provide SMTP_USER in .env for real emails.");
     }
     return transporter;
 };
@@ -94,10 +90,14 @@ router.post('/request-otp', async (req, res) => {
             html: `<b>Your OTP is: ${otp}</b><br>It will expire in 5 minutes.`
         });
 
+        if (info.mock) {
+            // Since we mocked it, send the OTP back in the response for prototype testing
+            return res.json({ message: 'OTP sent successfully (Mocked)', otp });
+        }
+
         const previewUrl = nodemailer.getTestMessageUrl(info);
         if (previewUrl) {
             console.log(`Preview URL: ${previewUrl}`);
-            // Returning the preview URL just for easy dev access (in production, remove this)
             return res.json({ message: 'OTP sent', previewUrl });
         }
 
