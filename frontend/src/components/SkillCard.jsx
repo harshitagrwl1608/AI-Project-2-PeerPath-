@@ -25,7 +25,7 @@ const SkillCard = ({ user }) => {
 
         try {
             await createSession(sessionData, currentUser?.email || null);
-            showToast(`Session request sent to ${sessionData.peerName}! Check My Sessions.`, 'success');
+            showToast(`Session request sent to ${user.name || 'Anonymous User'}! Check My Sessions.`, 'success');
         } catch (err) {
             showToast('Failed to send request. Please try again.', 'error');
         } finally {
