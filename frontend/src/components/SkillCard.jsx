@@ -48,7 +48,7 @@ const SkillCard = ({ user }) => {
                             <button onClick={() => setShowProfile(true)} className="font-bold text-lg text-gray-900 hover:text-primary transition text-left">
                                 {user.name || 'Anonymous User'}
                             </button>
-                            <p className="text-sm text-gray-500">{(user.college || 'N/A')} &bull; {(user.year || 'N/A')} Year</p>
+                            <p className="text-sm text-gray-500">{(user.college || 'N/A')} &bull; {(user.year || 'N/A')}</p>
                         </div>
                     </div>
                     <div className="flex items-center bg-yellow-50 px-2 py-1 rounded-md text-amber text-xs font-bold shrink-0 shadow-sm border border-yellow-100">

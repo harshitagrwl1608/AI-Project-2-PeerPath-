@@ -71,7 +71,7 @@ const UserProfileModal = ({ userId, defaultUserObj, onClose }) => {
                         <div className="text-center mb-6">
                             <h2 className="text-2xl font-bold text-gray-900 tracking-tight">{user.name}</h2>
                             <p className="text-gray-500 font-medium mt-1 flex items-center justify-center gap-1.5">
-                                <MapPin className="w-4 h-4" /> {user.college} &bull; {user.year} Year
+                                <MapPin className="w-4 h-4" /> {user.college} &bull; {user.year}
                             </p>
                             {user.branch && <p className="text-gray-400 text-sm mt-0.5">{user.branch}</p>}
                         </div>
