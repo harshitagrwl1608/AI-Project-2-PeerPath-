@@ -89,9 +89,11 @@ const Navbar = () => {
                                                     notifications.map(notif => (
                                                         <div 
                                                             key={notif.id} 
-                                                            className={`p-3 border-b border-gray-50 hover:bg-gray-50 transition cursor-default ${!notif.isRead ? 'bg-indigo-50/30' : ''}`}
+                                                            className={`p-3 border-b border-gray-50 hover:bg-gray-50 transition cursor-pointer ${!notif.isRead ? 'bg-indigo-50/30' : ''}`}
                                                             onClick={() => {
                                                                 if (!notif.isRead) markAsRead(notif.id);
+                                                                setIsNotifOpen(false);
+                                                                navigate('/sessions');
                                                             }}
                                                         >
                                                             <div className="flex gap-3">
