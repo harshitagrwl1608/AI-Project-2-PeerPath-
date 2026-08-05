@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS sessions (
     time VARCHAR,
     "meetLink" VARCHAR,
     messages JSONB DEFAULT '[]'::JSONB,
+    rating NUMERIC,
+    feedback TEXT,
     "createdAt" TIMESTAMP DEFAULT NOW()
 );
 
