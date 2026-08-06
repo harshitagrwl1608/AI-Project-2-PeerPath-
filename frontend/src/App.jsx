@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -73,6 +74,7 @@ function App() {
                     </NotificationProvider>
                 </ToastProvider>
             </AuthProvider>
+            <Analytics />
         </BrowserRouter>
     );
 }
